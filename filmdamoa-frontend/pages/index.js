@@ -1,9 +1,17 @@
+import React, { useEffect } from 'react';
+import Head from 'next/head';
+import withLayout from '../components/withLayout';
+
 const Index = () => {
   return (
-    <div>
+    <>
+      <Head>
+        <title>FILMDAMOA - 메인 페이지</title>
+        <meta name="description" content="개봉 영화에 대한 모든 정보는 'FILMDAMOA'에서 얻으세요!" />
+      </Head>
       <h1>Hello, world!</h1>
-    </div>
+    </>
   );
 }
 
-export default Index;
+export default withLayout(Index);
