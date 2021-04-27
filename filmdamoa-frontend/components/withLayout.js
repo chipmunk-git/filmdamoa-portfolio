@@ -4,9 +4,13 @@ import { lighten, darken } from 'polished';
 
 const StyledHeader = styled.header`
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: space-between;
+  align-items: flex-end;
   padding: 0.5rem 0;
+
+  @media ${({ theme }) => theme.media.mobile} {
+    flex-wrap: wrap;
+  }
 `
 
 const Logo = styled.a`
@@ -15,6 +19,38 @@ const Logo = styled.a`
   color: ${({ theme }) => theme.colors.black};
   font-size: 2.75rem;
   font-weight: bold;
+
+  @media ${({ theme }) => theme.media.tablet} {
+    padding-left: 2rem;
+  }
+
+  @media ${({ theme }) => theme.media.mobile} {
+    padding-left: 0.375rem;
+  }
+`
+
+const Wrapper = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  width: 15rem;
+  padding-right: 3.625rem;
+  font-size: ${({ theme }) => theme.fontSize.medium};
+
+  @media ${({ theme }) => theme.media.tablet} {
+    width: 12.125rem;
+    padding-right: 2rem;
+  }
+
+  @media ${({ theme }) => theme.media.mobile} {
+    width: 100%;
+    padding-right: 0.375rem;
+  }
+`
+
+const Faker = styled(Wrapper)`
+  @media ${({ theme }) => theme.media.tablet} {
+    display: none;
+  }
 `
 
 const StyledNav = styled.nav`
@@ -60,6 +96,32 @@ const StyledUl = styled.ul`
   }
 `
 
+const HeaderUl = styled(StyledUl)`
+  li {
+    &:hover {
+      background-color: transparent;
+    }
+  }
+
+  a {
+    padding: 0 0.75rem;
+    margin: 0;
+    color: ${({ theme }) => theme.colors.black};
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    @media ${({ theme }) => theme.media.tablet} {
+      padding: 0 0.75rem;
+    }
+
+    @media ${({ theme }) => theme.media.mobile} {
+      padding: 0 0.75rem;
+    }
+  }
+`
+
 const StyledSection = styled.section`
   padding: 3.625rem;
   min-height: 76vh;
@@ -90,29 +152,12 @@ const StyledFooter = styled.footer`
   }
 `
 
-const FooterUl = styled(StyledUl)`
+const FooterUl = styled(HeaderUl)`
   display: flex;
   margin: 0.75rem 0;
 
-  li {
-    &:hover {
-      background-color: ${darken(0.05, 'white')};
-      border-radius: 0.25rem;
-    }
-  }
-
   a {
-    padding: 0 0.75rem;
     margin: 0.5rem 0;
-    color: ${({ theme }) => theme.colors.black};
-
-    @media ${({ theme }) => theme.media.tablet} {
-      padding: 0 0.75rem;
-    }
-
-    @media ${({ theme }) => theme.media.mobile} {
-      padding: 0 0.75rem;
-    }
   }
 `
 
@@ -126,9 +171,24 @@ const withLayout = (WrappedComponent) => ({ ...props }) => {
   return (
     <>
       <StyledHeader>
+        <Faker />
         <Link href="/" passHref>
           <Logo tabIndex="0">FILMDAMOA</Logo>
         </Link>
+        <Wrapper>
+          <HeaderUl>
+            <li>
+              <Link href="/login">
+                <a tabIndex="0">로그인</a>
+              </Link>
+            </li>
+            <li>
+              <Link href="/join">
+                <a tabIndex="0">회원가입</a>
+              </Link>
+            </li>
+          </HeaderUl>
+        </Wrapper>
       </StyledHeader>
       <StyledNav>
         <StyledUl>
