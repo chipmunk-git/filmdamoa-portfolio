@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import Head from 'next/head';
-import withLayout from '../components/withLayout';
+import { withLayout } from '../components';
 
 const Index = () => {
   return (
