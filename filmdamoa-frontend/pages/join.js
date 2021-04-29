@@ -1,29 +1,15 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import Head from 'next/head';
-import Router from 'next/router';
-import styled from 'styled-components';
 import { InputWithLabel, UtilityButton, withAuth } from '../components';
 
-const Aligner = styled.div`
-  margin-top: 1rem;
-  text-align: right;
-`
-
-const StyledSpan = styled.span`
-  color: ${({ theme }) => theme.colors.greyDark};
-  cursor: pointer;
-  
-  &:hover {
-    text-decoration: underline ${({ theme }) => theme.colors.greyDark};
-  }
-`
-
-const Login = () => {
+const Join = () => {
   const [inputs, setInputs] = useState({
     username: '',
-    password: ''
+    password: '',
+    passwordConfirm: '',
+    email: ''
   });
-  const { username, password } = inputs;
+  const { username, password, passwordConfirm, email } = inputs;
   const onChange = useCallback(e => {
     const { name, value } = e.target;
     setInputs(inputs => ({
@@ -34,27 +20,27 @@ const Login = () => {
 
   const buttonStyleProps = useMemo(() => ({
     size: 'great',
-    margin: '1rem 0',
+    margin: '1rem 0 0',
     width: '100%'
   }), []);
 
   return (
     <>
       <Head>
-        <title>FILMDAMOA - 로그인</title>
-        <meta name="description" content="로그인 페이지입니다." />
+        <title>FILMDAMOA - 회원가입</title>
+        <meta name="description" content="회원가입 페이지입니다." />
       </Head>
       <div>
         <InputWithLabel label="아이디" name="username" placeholder="아이디" value={username} onChange={onChange} />
         <InputWithLabel label="비밀번호" name="password" placeholder="비밀번호"
           type="password" value={password} onChange={onChange} />
-        <UtilityButton styleProps={buttonStyleProps}>로그인</UtilityButton>
-        <Aligner>
-          <StyledSpan onClick={() => Router.push('/join')}>회원가입</StyledSpan>
-        </Aligner>
+        <InputWithLabel label="비밀번호 확인" name="passwordConfirm" placeholder="비밀번호 확인"
+          type="password" value={passwordConfirm} onChange={onChange} />
+        <InputWithLabel label="이메일" name="email" placeholder="이메일" value={email} onChange={onChange} />
+        <UtilityButton styleProps={buttonStyleProps}>회원가입</UtilityButton>
       </div>
     </>
   );
 }
 
-export default withAuth(React.memo(Login), '로그인');
+export default withAuth(React.memo(Join), '회원가입');

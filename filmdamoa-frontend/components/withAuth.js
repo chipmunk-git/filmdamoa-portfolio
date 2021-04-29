@@ -20,6 +20,7 @@ const ShadowedBox = styled.div`
 
   @media ${({ theme }) => theme.media.mobile} {
     width: 100vw;
+    height: 100vh;
   }
 `
 
@@ -44,21 +45,30 @@ const Contents = styled.div`
   height: auto;
 
   @media ${({ theme }) => theme.media.mobile} {
-    height: calc(100vh - 5rem);
+    min-height: calc(100vh - 5rem);
+
+    h2 {
+      margin: 0 0 1.375rem;
+    }
 
     > div {
-      h2 {
-        margin: 0 0 1.375rem;
-      }
-
       > div, button {
         margin: 1.375rem 0;
+
+        &:last-child {
+          margin: 1.375rem 0 0;
+        }
       }
     }
   }
 `
 
-const withAuth = (WrappedComponent) => ({ ...props }) => {
+const Title = styled.h2`
+  font-size: 1.5rem;
+  margin: 0 0 1rem;
+`
+
+const withAuth = (WrappedComponent, title) => ({ ...props }) => {
   return (
     <Background>
       <Positioner>
@@ -69,6 +79,7 @@ const withAuth = (WrappedComponent) => ({ ...props }) => {
             </Link>
           </LogoWrapper>
           <Contents>
+            <Title>{title}</Title>
             <WrappedComponent {...props} />
           </Contents>
         </ShadowedBox>
