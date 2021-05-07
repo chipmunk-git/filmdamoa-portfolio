@@ -68,24 +68,28 @@ const Title = styled.h2`
   margin: 0 0 1rem;
 `
 
-const withAuth = (WrappedComponent, title) => ({ ...props }) => {
-  return (
-    <Background>
-      <Positioner>
-        <ShadowedBox>
-          <LogoWrapper>
-            <Link href="/" passHref>
-              <Logo>FILMDAMOA</Logo>
-            </Link>
-          </LogoWrapper>
-          <Contents>
-            <Title>{title}</Title>
-            <WrappedComponent {...props} />
-          </Contents>
-        </ShadowedBox>
-      </Positioner>
-    </Background>
-  );
+const withAuth = (WrappedComponent, title) => {
+  const WithAuth = props => {
+    return (
+      <Background>
+        <Positioner>
+          <ShadowedBox>
+            <LogoWrapper>
+              <Link href="/" passHref>
+                <Logo>FILMDAMOA</Logo>
+              </Link>
+            </LogoWrapper>
+            <Contents>
+              <Title>{title}</Title>
+              <WrappedComponent {...props} />
+            </Contents>
+          </ShadowedBox>
+        </Positioner>
+      </Background>
+    );
+  }
+
+  return WithAuth;
 }
 
 export default withAuth;

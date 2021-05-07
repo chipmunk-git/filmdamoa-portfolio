@@ -167,83 +167,87 @@ const Copyright = styled.div`
   color: ${({ theme }) => theme.colors.black};
 `
 
-const withLayout = (WrappedComponent) => ({ ...props }) => {
-  return (
-    <>
-      <StyledHeader>
-        <Faker />
-        <Link href="/" passHref>
-          <Logo tabIndex="0">FILMDAMOA</Logo>
-        </Link>
-        <Wrapper>
-          <HeaderUl>
+const withLayout = (WrappedComponent) => {
+  const WithLayout = props => {
+    return (
+      <>
+        <StyledHeader>
+          <Faker />
+          <Link href="/" passHref>
+            <Logo tabIndex="0">FILMDAMOA</Logo>
+          </Link>
+          <Wrapper>
+            <HeaderUl>
+              <li>
+                <Link href="/login">
+                  <a tabIndex="0">로그인</a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/join">
+                  <a tabIndex="0">회원가입</a>
+                </Link>
+              </li>
+            </HeaderUl>
+          </Wrapper>
+        </StyledHeader>
+        <StyledNav>
+          <StyledUl>
             <li>
-              <Link href="/login">
-                <a tabIndex="0">로그인</a>
+              <Link href="/movie">
+                <a tabIndex="0">영화</a>
               </Link>
             </li>
             <li>
-              <Link href="/join">
-                <a tabIndex="0">회원가입</a>
+              <Link href="/booking">
+                <a tabIndex="0">예매</a>
               </Link>
             </li>
-          </HeaderUl>
-        </Wrapper>
-      </StyledHeader>
-      <StyledNav>
-        <StyledUl>
-          <li>
-            <Link href="/movie">
-              <a tabIndex="0">영화</a>
-            </Link>
-          </li>
-          <li>
-            <Link href="/booking">
-              <a tabIndex="0">예매</a>
-            </Link>
-          </li>
-          <li>
-            <Link href="/event">
-              <a tabIndex="0">이벤트</a>
-            </Link>
-          </li>
-          <li>
-            <Link href="/community">
-              <a tabIndex="0">커뮤니티</a>
-            </Link>
-          </li>
-        </StyledUl>
-      </StyledNav>
-      <StyledSection>
-        <WrappedComponent {...props} />
-      </StyledSection>
-      <StyledFooter>
-        <FooterUl>
-          <li>
-            <Link href="/info">
-              <a tabIndex="0">소개</a>
-            </Link>
-          </li>
-          <li>
-            <Link href="/inquire">
-              <a tabIndex="0">문의하기</a>
-            </Link>
-          </li>
-          <li>
-            <Link href="/agreement">
-              <a tabIndex="0">이용약관</a>
-            </Link>
-          </li>
-          <li>
-            <Link href="/privacy">
-              <a tabIndex="0">개인정보 취급방침</a>
-            </Link>
-          </li>
-        </FooterUl>
-        <Copyright>© FILMDAMOA</Copyright>
-      </StyledFooter>
-    </>
-  );
+            <li>
+              <Link href="/event">
+                <a tabIndex="0">이벤트</a>
+              </Link>
+            </li>
+            <li>
+              <Link href="/community">
+                <a tabIndex="0">커뮤니티</a>
+              </Link>
+            </li>
+          </StyledUl>
+        </StyledNav>
+        <StyledSection>
+          <WrappedComponent {...props} />
+        </StyledSection>
+        <StyledFooter>
+          <FooterUl>
+            <li>
+              <Link href="/info">
+                <a tabIndex="0">소개</a>
+              </Link>
+            </li>
+            <li>
+              <Link href="/inquire">
+                <a tabIndex="0">문의하기</a>
+              </Link>
+            </li>
+            <li>
+              <Link href="/agreement">
+                <a tabIndex="0">이용약관</a>
+              </Link>
+            </li>
+            <li>
+              <Link href="/privacy">
+                <a tabIndex="0">개인정보 취급방침</a>
+              </Link>
+            </li>
+          </FooterUl>
+          <Copyright>© FILMDAMOA</Copyright>
+        </StyledFooter>
+      </>
+    );
+  }
+
+  return WithLayout;
 }
 
 export default withLayout;
