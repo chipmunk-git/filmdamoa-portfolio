@@ -86,8 +86,8 @@ sketch
 
 #### Spring Boot ####
 
-application.yml
-application.properties
+application*.yml
+application*.properties
 
 ### Java ###
 # Compiled class file
