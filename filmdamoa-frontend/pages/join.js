@@ -1,8 +1,10 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import Head from 'next/head';
 import { matches, isEmail } from 'validator';
+import debounce from 'lodash/debounce';
 import { InputWithLabel, UtilityButton, withAuth } from '../components';
 import { AuthErrorWrapper } from '../lib/styledComponents';
+import { http } from '../lib/http';
 
 const Join = () => {
   const [inputs, setInputs] = useState({
@@ -13,10 +15,6 @@ const Join = () => {
   });
   const { username, password, passwordConfirm, email } = inputs;
 
-  // const [exists, setExists] = useState({
-  //   username: false,
-  //   email: false
-  // });
   const [error, setError] = useState(null);
 
   // 코드 출처: https://backend-intro.vlpt.us/6/03.html 기반
@@ -53,6 +51,28 @@ const Join = () => {
     }
   }
 
+  const checkExists = async (key, value, message) => {
+    try {
+      const resp = await http.get(`/auth/exists/${key}/${value}`);
+
+      if (resp.data.exists) {
+        setError(message);
+      } else {
+        setError(null);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  const checkUsernameExists = debounce((username) => {
+    checkExists('username', username, '이미 존재하는 아이디입니다.');
+  }, 300);
+
+  const checkEmailExists = debounce((email) => {
+    checkExists('email', email, '이미 존재하는 이메일입니다.');
+  }, 300);
+
   const onChange = useCallback(e => {
     const { name, value } = e.target;
     setInputs(inputs => ({
@@ -65,6 +85,8 @@ const Join = () => {
     if (name.indexOf('password') > -1 || !validation) return; // 비밀번호 검증이거나, 검증 실패하면 여기서 마침
 
     // TODO: 이메일, 아이디 중복 확인
+    const check = name === 'email' ? checkEmailExists : checkUsernameExists; // name에 따라 이메일 체크할지 아이디 체크할지 결정
+    check(value);
   }, [password]);
 
   const buttonStyleProps = useMemo(() => ({
