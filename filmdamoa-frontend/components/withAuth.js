@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import Link from 'next/link';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { shadow } from '../lib/styleUtils';
 
 const Background = styled.div`
@@ -59,6 +60,19 @@ const Contents = styled.div`
           margin: 1.375rem 0 0;
         }
       }
+
+      ${({ result }) => result &&
+        css`
+          > div {
+            margin: 3rem 0;
+            font-size: 1.375rem;
+
+            &:last-child {
+              margin: 3rem 0;
+            }
+          }
+        `
+      }
     }
   }
 `
@@ -70,6 +84,8 @@ const Title = styled.h2`
 
 const withAuth = (WrappedComponent, title) => {
   const WithAuth = props => {
+    const [result, setResult] = useState(null);
+
     return (
       <Background>
         <Positioner>
@@ -79,9 +95,14 @@ const withAuth = (WrappedComponent, title) => {
                 <Logo>FILMDAMOA</Logo>
               </Link>
             </LogoWrapper>
-            <Contents>
-              <Title>{title}</Title>
-              <WrappedComponent {...props} />
+            <Contents result={result}>
+              {result
+                ? <WrappedComponent {...props} result={result} setResult={setResult} />
+                : <>
+                    <Title>{title}</Title>
+                    <WrappedComponent {...props} result={result} setResult={setResult} />
+                  </>
+              }
             </Contents>
           </ShadowedBox>
         </Positioner>

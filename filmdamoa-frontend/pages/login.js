@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import Head from 'next/head';
-import Router from 'next/router';
+import { useRouter } from 'next/router';
 import styled from 'styled-components';
 import { InputWithLabel, UtilityButton, withAuth } from '../components';
 
@@ -32,6 +32,8 @@ const Login = () => {
     }));
   }, []);
 
+  const router = useRouter();
+
   const buttonStyleProps = useMemo(() => ({
     size: 'great',
     margin: '1rem 0',
@@ -50,7 +52,7 @@ const Login = () => {
           type="password" value={password} onChange={onChange} />
         <UtilityButton styleProps={buttonStyleProps}>로그인</UtilityButton>
         <Aligner>
-          <StyledSpan onClick={() => Router.push('/join')}>회원가입</StyledSpan>
+          <StyledSpan onClick={() => router.push('/join')}>회원가입</StyledSpan>
         </Aligner>
       </div>
     </>
