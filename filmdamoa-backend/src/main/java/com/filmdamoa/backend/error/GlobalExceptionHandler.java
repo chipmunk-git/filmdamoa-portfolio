@@ -5,6 +5,7 @@ import java.nio.file.AccessDeniedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -72,6 +73,14 @@ public class GlobalExceptionHandler {
 	protected ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
 		logger.error("handleAccessDeniedException", e);
 		final ErrorResponse response = ErrorResponse.of(ErrorCode.HANDLE_ACCESS_DENIED);
+
+		return ResponseEntity.status(response.getStatus()).body(response);
+	}
+	
+	@ExceptionHandler(BadCredentialsException.class)
+	protected ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException e) {
+		logger.error("handleBadCredentialsException", e);
+		final ErrorResponse response = ErrorResponse.of(ErrorCode.HANDLE_ACCESS_DENIED, e.getMessage());
 
 		return ResponseEntity.status(response.getStatus()).body(response);
 	}
