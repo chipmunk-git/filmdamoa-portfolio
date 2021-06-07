@@ -16,15 +16,11 @@ function handleMouseDownOnce() {
   window.addEventListener('keydown', handleFirstTab);
 }
 
-const RemoveFocusWhenNotTab = () => {
+export const useRemoveFocusWhenNotTab = () => {
   useEffect(() => {
     window.addEventListener('keydown', handleFirstTab);
     return () => {
       window.removeEventListener('keydown', handleFirstTab);
     };
   });
-
-  return null;
 }
-
-export default RemoveFocusWhenNotTab;

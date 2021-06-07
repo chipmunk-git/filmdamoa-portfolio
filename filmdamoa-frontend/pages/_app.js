@@ -1,7 +1,8 @@
 import Head from 'next/head';
 import { createGlobalStyle, ThemeProvider } from 'styled-components';
 import { config, dom } from '@fortawesome/fontawesome-svg-core';
-import RemoveFocusWhenNotTab from '../lib/removeFocus';
+import { useRemoveFocusWhenNotTab } from '../lib/removeFocus';
+import { wrapper } from '../store/store';
 
 config.autoAddCss = false;
 const GlobalStyle = createGlobalStyle`
@@ -82,13 +83,14 @@ const fontFace = `@font-face {
 }`;
 
 function App({ Component, pageProps }) {
+  useRemoveFocusWhenNotTab();
+
   return (
     <>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <style>{fontFace}</style>
       </Head>
-      <RemoveFocusWhenNotTab />
       <GlobalStyle />
       <ThemeProvider theme={theme}>
         <Component {...pageProps} />
@@ -97,4 +99,4 @@ function App({ Component, pageProps }) {
   )
 }
 
-export default App;
+export default wrapper.withRedux(App);
