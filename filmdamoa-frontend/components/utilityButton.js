@@ -36,7 +36,7 @@ const sizeStyles = css`
 `
 
 const colorStyles = css`
-  ${({ theme, styleProps }) => {
+  ${({ theme, styleProps, inAction }) => {
     const color = styleProps.color ||
       styleProps.transparent ? [theme.colors['black'], 0.85, 0.8] : [theme.colors['freshRed'], 0.15, 0.1];
     
@@ -81,6 +81,19 @@ const colorStyles = css`
             color: white;
             border: 1px solid ${lighten(color[2], selected)};
           }
+
+          ${inAction &&
+            css`
+              color: white;
+              border: 1px solid ${lighten(color[1], selected)};
+            `
+          }
+        `
+      }
+
+      ${inAction &&
+        css`
+          background-color: ${lighten(color[1], selected)};
         `
       }
     `

@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { matches, isEmail } from 'validator';
 import debounce from 'lodash/debounce';
 import styled from 'styled-components';
+import * as cookie from 'cookie';
 import { InputWithLabel, UtilityButton, withAuth } from '../components';
 import { AuthErrorWrapper } from '../lib/styledComponents';
 import { http } from '../lib/http';
@@ -29,6 +30,7 @@ const Join = ({ result, setResult }) => {
 
   const [error, setError] = useState(null);
   const [seconds, setSeconds] = useState(5);
+  const [inAction, setInAction] = useState(false);
 
   const router = useRouter();
 
@@ -130,12 +132,15 @@ const Join = ({ result, setResult }) => {
     }
 
     try {
+      setInAction(true);
       const resp = await http.post('/auth/join', { email, username, password });
       setResult(result => ({
         ...result,
         username: resp.data.username
       }));
     } catch (e) {
+      setInAction(false);
+
       // 에러 처리하기
       if (e.response.status === 409) {
         const { message } = e.response.data;
@@ -177,11 +182,31 @@ const Join = ({ result, setResult }) => {
             {
               error && <AuthErrorWrapper>{error}</AuthErrorWrapper>
             }
-            <UtilityButton styleProps={buttonStyleProps} onClick={handleLocalRegister}>회원가입</UtilityButton>
+            {inAction
+              ? <UtilityButton styleProps={buttonStyleProps} inAction>회원가입 중...</UtilityButton>
+              : <UtilityButton styleProps={buttonStyleProps} onClick={handleLocalRegister}>회원가입</UtilityButton>
+            }
           </div>
       }
     </>
   );
+}
+
+export const getServerSideProps = async ({ req }) => {
+  const accessToken = cookie.parse(req.headers.cookie || '').accessToken;
+
+  if (accessToken) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
 }
 
 export default withAuth(React.memo(Join), '회원가입');

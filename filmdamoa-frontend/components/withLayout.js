@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import styled from 'styled-components';
 import { lighten, darken } from 'polished';
+import { useSelector } from 'react-redux';
 
 const StyledHeader = styled.header`
   display: flex;
@@ -90,7 +91,7 @@ const StyledUl = styled.ul`
   }
 
   li:not(:last-child) {
-    a {
+    a, button {
       border-right: 1px solid ${({ theme }) => theme.colors.greyDark};
     }
   }
@@ -103,7 +104,7 @@ const HeaderUl = styled(StyledUl)`
     }
   }
 
-  a {
+  a, button {
     padding: 0 0.75rem;
     margin: 0;
     color: ${({ theme }) => theme.colors.black};
@@ -120,11 +121,21 @@ const HeaderUl = styled(StyledUl)`
       padding: 0 0.75rem;
     }
   }
+
+  button {
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+
+    &:active {
+      text-decoration: underline;
+    }
+  }
 `
 
 const StyledSection = styled.section`
   padding: 3.625rem;
-  min-height: 76vh;
+  min-height: 70vh;
 
   @media ${({ theme }) => theme.media.tablet} {
     padding: 2rem;
@@ -169,25 +180,43 @@ const Copyright = styled.div`
 
 const withLayout = (WrappedComponent) => {
   const WithLayout = props => {
+    const { username } = useSelector(state => ({
+      username: state.user.username
+    }));
+
     return (
       <>
         <StyledHeader>
           <Faker />
           <Link href="/" passHref>
-            <Logo tabIndex="0">FILMDAMOA</Logo>
+            <Logo>FILMDAMOA</Logo>
           </Link>
           <Wrapper>
             <HeaderUl>
-              <li>
-                <Link href="/login">
-                  <a tabIndex="0">로그인</a>
-                </Link>
-              </li>
-              <li>
-                <Link href="/join">
-                  <a tabIndex="0">회원가입</a>
-                </Link>
-              </li>
+              {username
+                ? <>
+                    <li>
+                      <button>로그아웃</button>
+                    </li>
+                    <li>
+                      <Link href="/mypage">
+                        <a>{username} 님</a>
+                      </Link>
+                    </li>
+                  </>
+                : <>
+                    <li>
+                      <Link href="/login">
+                        <a>로그인</a>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/join">
+                        <a>회원가입</a>
+                      </Link>
+                    </li>
+                  </>
+              }
             </HeaderUl>
           </Wrapper>
         </StyledHeader>
@@ -195,22 +224,22 @@ const withLayout = (WrappedComponent) => {
           <StyledUl>
             <li>
               <Link href="/movie">
-                <a tabIndex="0">영화</a>
+                <a>영화</a>
               </Link>
             </li>
             <li>
               <Link href="/booking">
-                <a tabIndex="0">예매</a>
+                <a>예매</a>
               </Link>
             </li>
             <li>
               <Link href="/event">
-                <a tabIndex="0">이벤트</a>
+                <a>이벤트</a>
               </Link>
             </li>
             <li>
               <Link href="/community">
-                <a tabIndex="0">커뮤니티</a>
+                <a>커뮤니티</a>
               </Link>
             </li>
           </StyledUl>
@@ -222,22 +251,22 @@ const withLayout = (WrappedComponent) => {
           <FooterUl>
             <li>
               <Link href="/info">
-                <a tabIndex="0">소개</a>
+                <a>소개</a>
               </Link>
             </li>
             <li>
               <Link href="/inquire">
-                <a tabIndex="0">문의하기</a>
+                <a>문의하기</a>
               </Link>
             </li>
             <li>
               <Link href="/agreement">
-                <a tabIndex="0">이용약관</a>
+                <a>이용약관</a>
               </Link>
             </li>
             <li>
               <Link href="/privacy">
-                <a tabIndex="0">개인정보 취급방침</a>
+                <a>개인정보 취급방침</a>
               </Link>
             </li>
           </FooterUl>

@@ -13,5 +13,6 @@ export const login = (reqObj) => async (dispatch) => {
     dispatch({ type: userActionTypes.LOGIN_SUCCESS, username });
   } catch (e) {
     console.error(e);
+    throw e;
   }
 }

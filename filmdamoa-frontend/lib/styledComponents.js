@@ -2,6 +2,9 @@ import styled from 'styled-components';
 import { transitions } from './styleUtils';
 
 export const AuthErrorWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
   min-height: 2.375rem;
   margin: 1rem 0;
   color: ${({ theme }) => theme.colors.red};
