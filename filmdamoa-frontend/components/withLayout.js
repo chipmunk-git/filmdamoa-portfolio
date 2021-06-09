@@ -1,7 +1,9 @@
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import styled from 'styled-components';
 import { lighten, darken } from 'polished';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../store/user/action';
 
 const StyledHeader = styled.header`
   display: flex;
@@ -184,6 +186,15 @@ const withLayout = (WrappedComponent) => {
       username: state.user.username
     }));
 
+    const router = useRouter();
+
+    const dispatch = useDispatch();
+
+    const handleLogout = async () => {
+      await dispatch(logout());
+      router.reload();
+    }
+
     return (
       <>
         <StyledHeader>
@@ -196,7 +207,7 @@ const withLayout = (WrappedComponent) => {
               {username
                 ? <>
                     <li>
-                      <button>로그아웃</button>
+                      <button onClick={handleLogout}>로그아웃</button>
                     </li>
                     <li>
                       <Link href="/mypage">

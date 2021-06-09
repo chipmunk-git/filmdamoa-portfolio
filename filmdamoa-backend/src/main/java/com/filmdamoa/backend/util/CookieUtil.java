@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CookieUtil {
+	// 코드 출처: https://github.com/ehdrms2034/SpringBootWithJava/blob/master/Spring_React_Login/backend/src/src/main/java/com/donggeun/springSecurity/service/CookieUtil.java 기반
 	public Cookie createCookie(String cookieName, String value, long duration) {
 		Cookie cookie = new Cookie(cookieName, value);
 		cookie.setHttpOnly(true);

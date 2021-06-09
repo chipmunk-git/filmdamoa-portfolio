@@ -1,8 +1,6 @@
 package com.filmdamoa.backend.auth;
 
-import java.util.Map;
-
-import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
@@ -49,16 +47,12 @@ public class AuthController {
 	@PostMapping("/login")
 	public ResponseEntity<AuthResponse> login(@RequestBody @Validated(AuthRequest.Login.class) AuthRequest authRequest,
 											  HttpServletResponse response) {
-		Map<String, Object> map = authService.login(authRequest);
-		
-		response.addCookie((Cookie)map.get("accessCookie"));
-		response.addCookie((Cookie)map.get("refreshCookie"));
-		
-		AuthResponse authResponse = AuthResponse.builder()
-				.accessToken((String)map.get("accessToken"))
-				.username(authRequest.getUsername())
-				.build();
-		
-		return ResponseEntity.ok().body(authResponse);
+		return ResponseEntity.ok().body(authService.login(authRequest, response));
+	}
+	
+	@GetMapping("/logout")
+	public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
+		authService.logout(request, response);
+		return ResponseEntity.noContent().build();
 	}
 }

@@ -1,10 +1,10 @@
 package com.filmdamoa.backend.auth;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -94,7 +94,7 @@ public class AuthService {
 		return AuthResponse.builder().username(member.getUsername()).build();
 	}
 	
-	public Map<String, Object> login(AuthRequest authRequest) {
+	public AuthResponse login(AuthRequest authRequest, HttpServletResponse response) {
 		Authentication authentication = authenticate(authRequest.getUsername(), authRequest.getPassword());
 		final UserDetails userDetails = (UserDetails)authentication.getPrincipal();
 		
@@ -107,12 +107,10 @@ public class AuthService {
 		redisUtil.setDataExpire(authRequest.getUsername(), refreshToken,
 								JwtTokenUtil.REFRESH_TOKEN_VALIDATION_SECOND);
 		
-		Map<String, Object> map = new HashMap<>();
-		map.put("accessToken", accessToken);
-		map.put("accessCookie", accessCookie);
-		map.put("refreshCookie", refreshCookie);
+		response.addCookie(accessCookie);
+		response.addCookie(refreshCookie);
 		
-		return map;
+		return AuthResponse.builder().accessToken(accessToken).username(authRequest.getUsername()).build();
 	}
 	
 	private Authentication authenticate(String username, String password) {
@@ -123,5 +121,21 @@ public class AuthService {
 		} catch (BadCredentialsException e) {
 			throw new BadCredentialsException("아이디 또는 비밀번호가 맞지 않습니다.", e);
 		}
+	}
+	
+	public void logout(HttpServletRequest request, HttpServletResponse response) {
+		Cookie refreshCookie = cookieUtil.getCookie(request, JwtTokenUtil.REFRESH_TOKEN_NAME);
+		String refreshToken = refreshCookie.getValue();
+		String username = jwtTokenUtil.getUsernameFromToken(refreshToken);
+		
+		try {
+			if (redisUtil.getData(username) != null) redisUtil.deleteData(username);
+		} catch (IllegalArgumentException e) {}
+		
+		Cookie accessCookie = cookieUtil.createCookie(JwtTokenUtil.ACCESS_TOKEN_NAME, null, 0);
+		refreshCookie = cookieUtil.createCookie(JwtTokenUtil.REFRESH_TOKEN_NAME, null, 0);
+		
+		response.addCookie(accessCookie);
+		response.addCookie(refreshCookie);
 	}
 }

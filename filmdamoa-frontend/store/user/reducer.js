@@ -11,6 +11,11 @@ export default function reducer(state = userInitialState, action) {
         ...state,
         username: action.username,
       };
+    case userActionTypes.LOGOUT_SUCCESS:
+      return {
+        ...state,
+        username: null,
+      };
     default:
       return state;
   }
