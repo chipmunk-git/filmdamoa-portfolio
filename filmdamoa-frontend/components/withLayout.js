@@ -1,9 +1,10 @@
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import styled from 'styled-components';
 import { lighten, darken } from 'polished';
 import { useSelector, useDispatch } from 'react-redux';
-import { logout } from '../store/user/action';
+import { logout, maintainAuth } from '../store/user/action';
 
 const StyledHeader = styled.header`
   display: flex;
@@ -194,6 +195,10 @@ const withLayout = (WrappedComponent) => {
       await dispatch(logout());
       router.reload();
     }
+
+    useEffect(() => {
+      dispatch(maintainAuth());
+    }, [dispatch]);
 
     return (
       <>

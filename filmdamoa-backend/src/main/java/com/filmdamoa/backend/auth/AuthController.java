@@ -55,4 +55,9 @@ public class AuthController {
 		authService.logout(request, response);
 		return ResponseEntity.noContent().build();
 	}
+	
+	@GetMapping("/me")
+	public ResponseEntity<AuthResponse> me() {
+		return ResponseEntity.ok().body(authService.me());
+	}
 }

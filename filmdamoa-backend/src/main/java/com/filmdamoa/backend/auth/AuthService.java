@@ -12,6 +12,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -96,10 +97,10 @@ public class AuthService {
 	
 	public AuthResponse login(AuthRequest authRequest, HttpServletResponse response) {
 		Authentication authentication = authenticate(authRequest.getUsername(), authRequest.getPassword());
-		final UserDetails userDetails = (UserDetails)authentication.getPrincipal();
+		UserDetails userDetails = (UserDetails)authentication.getPrincipal();
 		
-		final String accessToken = jwtTokenUtil.generateToken(userDetails);
-		final String refreshToken = jwtTokenUtil.generateRefreshToken(userDetails);
+		String accessToken = jwtTokenUtil.generateToken(userDetails);
+		String refreshToken = jwtTokenUtil.generateRefreshToken(userDetails);
 		
 		Cookie accessCookie = cookieUtil.createCookie(JwtTokenUtil.ACCESS_TOKEN_NAME, accessToken, -1);
 		Cookie refreshCookie = cookieUtil.createCookie(JwtTokenUtil.REFRESH_TOKEN_NAME, refreshToken, -1);
@@ -137,5 +138,12 @@ public class AuthService {
 		
 		response.addCookie(accessCookie);
 		response.addCookie(refreshCookie);
+	}
+	
+	public AuthResponse me() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		UserDetails userDetails = (UserDetails)authentication.getPrincipal();
+		
+		return AuthResponse.builder().username(userDetails.getUsername()).build();
 	}
 }
