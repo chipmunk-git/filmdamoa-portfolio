@@ -41,6 +41,9 @@ public class AuthService {
 	@Autowired
 	private RedisUtil redisUtil;
 	
+	@Autowired
+	private JwtUserDetailsService jwtUserDetailsService;
+	
 	public AuthResponse existsUsername(String username) {
 		return exists("username", username);
 	}
@@ -124,17 +127,17 @@ public class AuthService {
 		}
 	}
 	
-	public void logout(HttpServletRequest request, HttpServletResponse response) {
-		Cookie refreshCookie = cookieUtil.getCookie(request, JwtTokenUtil.REFRESH_TOKEN_NAME);
-		String refreshToken = refreshCookie.getValue();
-		String username = jwtTokenUtil.getUsernameFromToken(refreshToken);
+	public void logout(HttpServletResponse response) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		UserDetails userDetails = (UserDetails)authentication.getPrincipal();
+		String username = userDetails.getUsername();
 		
 		try {
 			if (redisUtil.getData(username) != null) redisUtil.deleteData(username);
 		} catch (IllegalArgumentException e) {}
 		
 		Cookie accessCookie = cookieUtil.createCookie(JwtTokenUtil.ACCESS_TOKEN_NAME, null, 0);
-		refreshCookie = cookieUtil.createCookie(JwtTokenUtil.REFRESH_TOKEN_NAME, null, 0);
+		Cookie refreshCookie = cookieUtil.createCookie(JwtTokenUtil.REFRESH_TOKEN_NAME, null, 0);
 		
 		response.addCookie(accessCookie);
 		response.addCookie(refreshCookie);
@@ -145,5 +148,23 @@ public class AuthService {
 		UserDetails userDetails = (UserDetails)authentication.getPrincipal();
 		
 		return AuthResponse.builder().username(userDetails.getUsername()).build();
+	}
+	
+	public AuthResponse refresh(HttpServletRequest request, HttpServletResponse response) {
+		Cookie refreshCookie = cookieUtil.getCookie(request, JwtTokenUtil.REFRESH_TOKEN_NAME);
+		String refreshToken = refreshCookie.getValue();
+		String username = jwtTokenUtil.getUsernameFromToken(refreshToken);
+		String refreshTokenFromRedis = redisUtil.getData(username);
+		
+		if (refreshToken.equals(refreshTokenFromRedis)) {
+			UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(username);
+			String accessToken = jwtTokenUtil.generateToken(userDetails);
+			Cookie accessCookie = cookieUtil.createCookie(JwtTokenUtil.ACCESS_TOKEN_NAME, accessToken, -1);
+			response.addCookie(accessCookie);
+			
+			return AuthResponse.builder().accessToken(accessToken).build();
+		} else {
+			throw new RuntimeException();
+		}
 	}
 }

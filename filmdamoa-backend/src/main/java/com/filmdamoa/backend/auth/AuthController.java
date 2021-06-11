@@ -51,13 +51,18 @@ public class AuthController {
 	}
 	
 	@GetMapping("/logout")
-	public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
-		authService.logout(request, response);
+	public ResponseEntity<String> logout(HttpServletResponse response) {
+		authService.logout(response);
 		return ResponseEntity.noContent().build();
 	}
 	
 	@GetMapping("/me")
 	public ResponseEntity<AuthResponse> me() {
 		return ResponseEntity.ok().body(authService.me());
+	}
+	
+	@GetMapping("/refresh")
+	public ResponseEntity<AuthResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
+		return ResponseEntity.ok().body(authService.refresh(request, response));
 	}
 }
