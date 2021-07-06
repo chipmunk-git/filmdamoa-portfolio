@@ -1,4 +1,4 @@
-package com.filmdamoa.backend.auth;
+package com.filmdamoa.backend.person;
 
 import java.time.OffsetDateTime;
 
@@ -11,53 +11,34 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import com.filmdamoa.backend.common.TupleState;
-
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "member")
+@Table(name = "person")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Member {
+public class Person {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@Column(length = 30, unique = true, nullable = false)
-	private String username;
-	
 	@Column(nullable = false)
-	private String password;
+	private String koreanName;
 	
-	@Column(unique = true, nullable = false)
-	private String nickname;
-	
-	@Column(unique = true, nullable = false)
-	private String email;
-	
-	private String role;
-	
-	@Column(nullable = false)
-	private TupleState tupleState;
+	private String englishName;
 	
 	@Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false)
 	@CreationTimestamp
 	private OffsetDateTime createDateTime;
 	
 	@Builder
-	private Member(Long id, String username, String password, String nickname,
-				   String email, String role, TupleState tupleState, OffsetDateTime createDateTime) {
+	private Person(Long id, String koreanName, String englishName, OffsetDateTime createDateTime) {
 		this.id = id;
-		this.username = username;
-		this.password = password;
-		this.nickname = nickname;
-		this.email = email;
-		this.role = role;
-		this.tupleState = tupleState;
+		this.koreanName = koreanName;
+		this.englishName = englishName;
 		this.createDateTime = createDateTime;
 	}
 }

@@ -36,5 +36,5 @@ public class AuthRequest implements Serializable {
 		this.email = email;
 	}
 	
-	public static interface Login {};
+	public static interface Login {}
 }

@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.filmdamoa.backend.common.TupleState;
 import com.filmdamoa.backend.util.CookieUtil;
 import com.filmdamoa.backend.util.JwtTokenUtil;
 import com.filmdamoa.backend.util.RedisUtil;
@@ -91,6 +92,7 @@ public class AuthService {
 				.nickname(username)
 				.email(email)
 				.role("ROLE_MEMBER")
+				.tupleState(TupleState.PRIVATE_TUPLE)
 				.build();
 		
 		memberRepository.save(member);
