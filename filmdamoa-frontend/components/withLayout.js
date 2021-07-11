@@ -137,8 +137,13 @@ const HeaderUl = styled(StyledUl)`
 `
 
 const StyledSection = styled.section`
-  padding: 3.625rem;
   min-height: 70vh;
+  padding: 3.625rem calc(50vw - 37.5rem);
+  position: relative;
+
+  @media ${({ theme }) => theme.media.desktop} {
+    padding: 3.625rem;
+  }
 
   @media ${({ theme }) => theme.media.tablet} {
     padding: 2rem;

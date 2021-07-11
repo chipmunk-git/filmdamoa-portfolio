@@ -53,8 +53,9 @@ public class MovieMapper {
 		movieDto.manufactureCountry(entity.getManufactureCountry());
 		movieDto.movieReleaseDate(entity.getMovieReleaseDate());
 		movieDto.tupleState(entity.getTupleState());
+		movieDto.dailyBoxOffice(entity.getDailyBoxOffice());
 		movieDto.movieLikes(entity.getCountOfMovieLikes());
-		movieDto.audienceScore(entity.getAvgOfAudienceScore());
+		movieDto.audienceScore(entity.getAvgOfAudienceScore() == null ? 0 : entity.getAvgOfAudienceScore());
 		
 		movieDto.movieDirector(entityMoviePersonsToMovieDirector(entity));
 		movieDto.movieStar(entityMoviePersonsToMovieStar(entity));

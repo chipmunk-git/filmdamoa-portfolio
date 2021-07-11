@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import { createGlobalStyle, ThemeProvider } from 'styled-components';
 import { config, dom } from '@fortawesome/fontawesome-svg-core';
+import '../lib/fontawesome';
 import { useRemoveFocusWhenNotTab } from '../lib/removeFocus';
 import { wrapper } from '../store/store';
 

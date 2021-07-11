@@ -14,7 +14,7 @@ public class MovieService {
 	private MovieMapper movieMapper;
 	
 	public List<MovieDto> readMovieAll() {
-		List<Movie> movies = movieRepository.findAll();
+		List<Movie> movies = movieRepository.findDistinctTop4ByOrderByDailyBoxOfficeAsc();
 		return movieMapper.toDtos(movies, MovieDto.MappingCondition.EXCEPT_MOVIE_GENRE);
 	}
 }

@@ -22,6 +22,7 @@ public class MovieDto {
 	private String manufactureCountry;
 	private LocalDate movieReleaseDate;
 	private TupleState tupleState;
+	private Short dailyBoxOffice;
 	private Integer movieLikes;
 	private Float audienceScore;
 	private String movieDirector;
@@ -31,8 +32,9 @@ public class MovieDto {
 	@Builder
 	private MovieDto(Long id, String movieKoreanTitle, String movieEnglishTitle, Boolean screeningState,
 					 String posterThumbnail, String synopsis, Short movieRunningTime, MovieRating movieRating,
-					 String manufactureCountry, LocalDate movieReleaseDate, TupleState tupleState, Integer movieLikes,
-					 Float audienceScore, String movieDirector, String movieStar, String movieGenre) {
+					 String manufactureCountry, LocalDate movieReleaseDate, TupleState tupleState, Short dailyBoxOffice,
+					 Integer movieLikes, Float audienceScore,
+					 String movieDirector, String movieStar, String movieGenre) {
 		this.id = id;
 		this.movieKoreanTitle = movieKoreanTitle;
 		this.movieEnglishTitle = movieEnglishTitle;
@@ -44,6 +46,7 @@ public class MovieDto {
 		this.manufactureCountry = manufactureCountry;
 		this.movieReleaseDate = movieReleaseDate;
 		this.tupleState = tupleState;
+		this.dailyBoxOffice = dailyBoxOffice;
 		this.movieLikes = movieLikes;
 		this.audienceScore = audienceScore;
 		this.movieDirector = movieDirector;
