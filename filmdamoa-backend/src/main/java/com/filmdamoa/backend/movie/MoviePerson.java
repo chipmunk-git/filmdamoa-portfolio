@@ -41,7 +41,7 @@ public class MoviePerson {
 	@JoinColumn(name="movie_id")
 	private Movie movie;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name="person_id")
 	private Person person;
 	

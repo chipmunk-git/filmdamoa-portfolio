@@ -69,7 +69,7 @@ public class Movie {
 	@Column(unique = true)
 	private Short dailyBoxOffice;
 	
-	@Formula("(select count(mm.movie_likes) from movie_member mm where mm.movie_likes = true and mm.movie_id = id)")
+	@Formula("(select count(mm.movie_like) from movie_member mm where mm.movie_like = true and mm.movie_id = id)")
 	private Integer countOfMovieLikes;
 	
 	@Formula("(select avg(mm.audience_score) from movie_member mm where mm.movie_id = id)")

@@ -25,6 +25,7 @@ public class MovieDto {
 	private Short dailyBoxOffice;
 	private Integer movieLikes;
 	private Float audienceScore;
+	private Boolean movieLike;
 	private String movieDirector;
 	private String movieStar;
 	private String movieGenre;
@@ -33,7 +34,7 @@ public class MovieDto {
 	private MovieDto(Long id, String movieKoreanTitle, String movieEnglishTitle, Boolean screeningState,
 					 String posterThumbnail, String synopsis, Short movieRunningTime, MovieRating movieRating,
 					 String manufactureCountry, LocalDate movieReleaseDate, TupleState tupleState, Short dailyBoxOffice,
-					 Integer movieLikes, Float audienceScore,
+					 Integer movieLikes, Float audienceScore, Boolean movieLike,
 					 String movieDirector, String movieStar, String movieGenre) {
 		this.id = id;
 		this.movieKoreanTitle = movieKoreanTitle;
@@ -49,6 +50,7 @@ public class MovieDto {
 		this.dailyBoxOffice = dailyBoxOffice;
 		this.movieLikes = movieLikes;
 		this.audienceScore = audienceScore;
+		this.movieLike = movieLike;
 		this.movieDirector = movieDirector;
 		this.movieStar = movieStar;
 		this.movieGenre = movieGenre;

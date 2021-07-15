@@ -35,7 +35,7 @@ public class MovieMapper {
 		return movie.build();
 	}
 	
-	public MovieDto toDto(Movie entity, MappingCondition mappingCondition) {
+	public MovieDto toDto(Movie entity, MappingCondition mappingCondition, boolean movieLike) {
 		if (entity == null) {
 			return null;
 		}
@@ -56,6 +56,7 @@ public class MovieMapper {
 		movieDto.dailyBoxOffice(entity.getDailyBoxOffice());
 		movieDto.movieLikes(entity.getCountOfMovieLikes());
 		movieDto.audienceScore(entity.getAvgOfAudienceScore() == null ? 0 : entity.getAvgOfAudienceScore());
+		movieDto.movieLike(movieLike);
 		
 		movieDto.movieDirector(entityMoviePersonsToMovieDirector(entity));
 		movieDto.movieStar(entityMoviePersonsToMovieStar(entity));
@@ -66,14 +67,14 @@ public class MovieMapper {
 		return movieDto.build();
 	}
 	
-	public List<MovieDto> toDtos(List<Movie> entities, MappingCondition mappingCondition) {
+	public List<MovieDto> toDtos(List<Movie> entities, MappingCondition mappingCondition, boolean movieLike) {
 		if (entities == null) {
 			return null;
 		}
 		
 		List<MovieDto> list = new ArrayList<MovieDto>(entities.size());
 		for (Movie movie : entities) {
-			list.add(toDto(movie, mappingCondition));
+			list.add(toDto(movie, mappingCondition, movieLike));
 		}
 		
 		return list;

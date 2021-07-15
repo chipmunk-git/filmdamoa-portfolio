@@ -31,7 +31,7 @@ public class MovieMember {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	private Boolean movieLikes;
+	private Boolean movieLike;
 	
 	private Short audienceScore;
 	
@@ -53,10 +53,10 @@ public class MovieMember {
 	private Member member;
 	
 	@Builder
-	private MovieMember(Long id, Boolean movieLikes, Short audienceScore, String movieReview,
+	private MovieMember(Long id, Boolean movieLike, Short audienceScore, String movieReview,
 						TupleState tupleState, OffsetDateTime createDateTime, Movie movie, Member member) {
 		this.id = id;
-		this.movieLikes = movieLikes;
+		this.movieLike = movieLike;
 		this.audienceScore = audienceScore;
 		this.movieReview = movieReview;
 		this.tupleState = tupleState;
