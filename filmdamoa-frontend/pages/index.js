@@ -1,10 +1,12 @@
+import { useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as cookie from 'cookie';
 import { decode } from 'html-entities';
-import { httpInNodeJs } from '../lib/http';
+import { useSelector } from 'react-redux';
+import { http, httpInNodeJs, getDataInNodeJs } from '../lib/http';
 import { withLayout } from '../components';
 import { wrapper } from '../store/store';
 import { setAccessToken } from '../store/user/action';
@@ -231,7 +233,7 @@ const UserActionWrapper = styled.div`
 const StyledHeart = styled(FontAwesomeIcon)`
   margin: 0 0.125rem;
   font-size: ${({ theme }) => theme.fontSize.medium} !important;
-  color: white;
+  color: ${({ theme, active }) => active ? theme.colors.freshRed : 'white'};
 `
 
 const BoxOfficeFaker = styled.div`
@@ -252,7 +254,30 @@ const BoxOfficeFaker = styled.div`
 `
 
 const Index = ({ data }) => {
-  const movieList = data.map(movie =>
+  const { username } = useSelector(state => ({
+    username: state.user.username
+  }));
+
+  const [movies, setMovies] = useState(data);
+  const handleToggle = async id => {
+    if (!username) return;
+
+    await http.post(`/movie/${id}/like`, {
+      movieLike: movies.find(movie => movie.id === id).movieLike
+    })
+    .then(() => setMovies(
+      movies.map(movie =>
+        movie.id === id ? {
+          ...movie,
+          movieLikes: movie.movieLike ? movie.movieLikes - 1 : movie.movieLikes + 1,
+          movieLike: !movie.movieLike
+        } : movie
+      )
+    ))
+    .catch(err => console.log(err));
+  }
+
+  const movieList = movies.map(movie =>
     <li key={movie.id}>
       <Link href={`/movie/${movie.id}`}>
         <a title="영화상세 보기">
@@ -269,9 +294,14 @@ const Index = ({ data }) => {
         </a>
       </Link>
       <UserActionWrapper>
-        <button>
-          <StyledHeart icon={["far", "heart"]} /> {movie.movieLikes}
-        </button>
+        {movie.movieLike
+          ? <button onClick={() => handleToggle(movie.id)}>
+              <StyledHeart icon={["fas", "heart"]} active={'true'} /> {movie.movieLikes}
+            </button>
+          : <button onClick={() => handleToggle(movie.id)}>
+              <StyledHeart icon={["far", "heart"]} /> {movie.movieLikes}
+            </button>
+        }
         <Link href={`/booking/${movie.id}`}>
           <a>예매</a>
         </Link>
@@ -306,11 +336,16 @@ const Index = ({ data }) => {
   );
 }
 
-export const getServerSideProps = wrapper.getServerSideProps(async ({ req, store }) => {
+export const getServerSideProps = wrapper.getServerSideProps(async ({ req, res, store }) => {
   const accessToken = cookie.parse(req.headers.cookie || '').accessToken;
-  if (accessToken) store.dispatch(setAccessToken(accessToken));
+  let resp = null;
 
-  const resp = await httpInNodeJs.get('/movie');
+  if (accessToken) {
+    store.dispatch(setAccessToken(accessToken));
+    resp = await getDataInNodeJs('/movie', accessToken, req, res, store);
+  } else {
+    resp = await httpInNodeJs.get('/movie');
+  }
   const data = resp.data;
 
   return {
