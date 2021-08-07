@@ -31,6 +31,7 @@ public class MovieMapper {
 		movie.manufactureCountry(dto.getManufactureCountry());
 		movie.movieReleaseDate(dto.getMovieReleaseDate());
 		movie.tupleState(dto.getTupleState());
+		movie.movieNumber(dto.getMovieNumber());
 		
 		return movie.build();
 	}
@@ -54,6 +55,7 @@ public class MovieMapper {
 		movieDto.movieReleaseDate(entity.getMovieReleaseDate());
 		movieDto.tupleState(entity.getTupleState());
 		movieDto.dailyBoxOffice(entity.getDailyBoxOffice());
+		movieDto.movieNumber(entity.getMovieNumber());
 		movieDto.movieLikes(entity.getCountOfMovieLikes());
 		movieDto.audienceScore(entity.getAvgOfAudienceScore() == null ? 0 : entity.getAvgOfAudienceScore());
 		movieDto.movieLike(movieLike);

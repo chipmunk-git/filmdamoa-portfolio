@@ -69,6 +69,9 @@ public class Movie {
 	@Column(unique = true)
 	private Short dailyBoxOffice;
 	
+	@Column(unique = true, nullable = false)
+	private String movieNumber;
+	
 	@Formula("(select count(mm.movie_like) from movie_member mm where mm.movie_like = true and mm.movie_id = id)")
 	private Integer countOfMovieLikes;
 	
@@ -85,8 +88,8 @@ public class Movie {
 	private Movie(Long id, String movieKoreanTitle, String movieEnglishTitle, Boolean screeningState,
 				  String posterThumbnail, String synopsis, Short movieRunningTime, MovieRating movieRating,
 				  String manufactureCountry, LocalDate movieReleaseDate, TupleState tupleState, OffsetDateTime createDateTime,
-				  Short dailyBoxOffice, Integer countOfMovieLikes, Float avgOfAudienceScore,
-				  List<MoviePerson> moviePersons, List<MovieGenre> movieGenres) {
+				  Short dailyBoxOffice, String movieNumber, Integer countOfMovieLikes,
+				  Float avgOfAudienceScore, List<MoviePerson> moviePersons, List<MovieGenre> movieGenres) {
 		this.id = id;
 		this.movieKoreanTitle = movieKoreanTitle;
 		this.movieEnglishTitle = movieEnglishTitle;
@@ -100,6 +103,7 @@ public class Movie {
 		this.tupleState = tupleState;
 		this.createDateTime = createDateTime;
 		this.dailyBoxOffice = dailyBoxOffice;
+		this.movieNumber = movieNumber;
 		this.countOfMovieLikes = countOfMovieLikes;
 		this.avgOfAudienceScore = avgOfAudienceScore;
 		this.moviePersons = moviePersons;

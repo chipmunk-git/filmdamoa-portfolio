@@ -302,7 +302,7 @@ const Index = ({ data }) => {
               <StyledHeart icon={["far", "heart"]} /> {movie.movieLikes}
             </button>
         }
-        <Link href={`/booking/${movie.id}`}>
+        <Link href={`/booking?movieNumber=${movie.movieNumber}`}>
           <a>예매</a>
         </Link>
       </UserActionWrapper>
