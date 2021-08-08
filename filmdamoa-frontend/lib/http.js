@@ -40,3 +40,22 @@ export const getDataInNodeJs = (url, token, req, res, store) => {
     } else console.log(error.config);
   });
 }
+
+export const postDataInNodeJs = (url, data, token, req, res, store) => {
+  return httpInNodeJs.post(url, data, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  .catch(async error => {
+    if (error.response.status === 401) {
+      const resp = await httpInNodeJs.get('/auth/refresh', {
+        headers: { Cookie: req.headers.cookie }
+      });
+      res.setHeader('set-cookie', resp.headers['set-cookie']);
+      store.dispatch(setAccessToken(resp.data.accessToken));
+
+      return await httpInNodeJs.post(url, data, {
+        headers: { Authorization: `Bearer ${resp.data.accessToken}` }
+      });
+    } else console.log(error.config);
+  });
+}

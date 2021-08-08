@@ -1,6 +1,11 @@
 import styled from 'styled-components';
 import { transitions } from './styleUtils';
 
+export const StyledArticle = styled.article`
+  width: 100%;
+  min-height: 100rem;
+`
+
 export const AuthErrorWrapper = styled.div`
   display: flex;
   justify-content: center;

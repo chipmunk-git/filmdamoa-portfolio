@@ -7,14 +7,10 @@ import * as cookie from 'cookie';
 import { decode } from 'html-entities';
 import { useSelector } from 'react-redux';
 import { http, httpInNodeJs, getDataInNodeJs } from '../lib/http';
+import { StyledArticle } from '../lib/styledComponents';
 import { withLayout } from '../components';
 import { wrapper } from '../store/store';
 import { setAccessToken } from '../store/user/action';
-
-const StyledArticle = styled.article`
-  width: 100%;
-  min-height: 100rem;
-`
 
 const BoxOfficeWrapper = styled.div`
   width: 100%;
