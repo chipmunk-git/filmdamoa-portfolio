@@ -1,22 +1,28 @@
 import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import styled, { css } from 'styled-components';
+import { darken } from 'polished';
 import * as cookie from 'cookie';
-import { httpInNodeJs, postDataInNodeJs } from '../lib/http';
+import { http, httpInNodeJs, postDataInNodeJs } from '../lib/http';
 import { numberReader, createParsedDates } from '../lib/dateFunction';
-import { StyledArticle } from '../lib/styledComponents';
+import { StyledArticle, scrollable } from '../lib/styledComponents';
 import { withLayout } from '../components';
 import { wrapper } from '../store/store';
 import { setAccessToken } from '../store/user/action';
 
-const CalendarWrapper = styled.div`
+const wrapperStyles = css`
   width: 72rem;
   margin: 0 auto;
-  overflow-x: scroll;
 
   @media ${({ theme }) => theme.media.desktop} {
     width: auto;
   }
+`
+
+const CalendarWrapper = styled.div`
+  overflow-x: scroll;
+  ${wrapperStyles};
+  ${scrollable};
 `
 
 const HorizontalCalendar = styled.ul`
@@ -120,12 +126,101 @@ const DateButton = styled.button`
   }}
 `
 
-const Booking = ({ data }) => {
-  const [parsedDates, setParsedDates] = useState(createParsedDates(data.movieFormDeList));
-  const [selection, setSelection] = useState(null);
-  const handleDateSelection = (active, formattedDate) => {
-    if (active) setSelection(formattedDate);
+const ListsWrapper = styled.div`
+  display: flex;
+  ${wrapperStyles};
+`
+
+const MovieListBox = styled.div`
+  width: 25%;
+  padding: 0 0.875rem;
+  border: 1px solid ${({ theme }) => theme.colors.greyLight};
+
+  h1 {
+    margin: 0.875rem 0;
+    font-size: ${({ theme }) => theme.fontSize.large};
   }
+`
+
+const MovieList = styled.ul`
+  height: 32.5rem;
+  padding: 0;
+  margin: 0.875rem 0;
+  list-style: none;
+  overflow-y: auto;
+  ${scrollable};
+`
+
+const MovieItem = styled.li`
+  display: flex;
+  align-items: center;
+  padding: 0 0.25rem;
+  font-size: ${({ theme }) => theme.fontSize.medium};
+
+  ${({ theme, active, selected }) => css`
+    ${active ?
+      css`
+        &:hover {
+          background-color: ${darken(0.05, 'white')};
+        }
+      ` :
+      css`
+        opacity: 0.5;
+      `
+    }
+
+    ${selected &&
+      css`
+        background-color: ${theme.colors.thumbBg};
+
+        &:hover {
+          background-color: ${theme.colors.thumbBg};
+        }
+      `
+    }
+  `}
+
+  span {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-image: url(${({ movieRating }) => movieRating});
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  button {
+    width: calc(100% - 20px);
+    padding: 0.375rem 0.375rem;
+    cursor: pointer;
+    background-color: transparent;
+    border: 0;
+    text-align: left;
+
+    ${({ theme, active, selected }) => css`
+      ${!active &&
+        css`
+          color: ${theme.colors.thumbBg};
+          cursor: default;
+        `
+      }
+
+      ${selected &&
+        css`
+          color: white;
+        `
+      }
+    `}
+  }
+`
+
+const Booking = ({ data, queryMovieNumber }) => {
+  const [parsedDates, setParsedDates] = useState(createParsedDates(data.movieFormDeList));
+  const [movies, setMovies] = useState(data.movieList);
+  const [selection, setSelection] = useState({
+    formattedDate: parsedDates[0]['formattedDate'],
+    movieNumber: queryMovieNumber
+  });
 
   const scrollRef = useRef();
   useEffect(() => {
@@ -142,16 +237,58 @@ const Booking = ({ data }) => {
     }
   }, []);
 
+  const postBookingData = reqObj => http.post('/booking', reqObj).then(resp => {
+    setParsedDates(createParsedDates(resp.data.movieFormDeList));
+    setMovies(resp.data.movieList);
+  }).catch(err => console.log(err));
+
+  const handleDateSelection = async (active, formattedDate) => {
+    if (active) {
+      setSelection({ ...selection, formattedDate: formattedDate });
+      await postBookingData({
+        playDe: formattedDate,
+        movieNo1: selection.movieNumber
+      });
+    }
+  }
+
   const calendarItems = parsedDates.map(parsedDate =>
     <li key={parsedDate.id}>
       {parsedDate.fullYearAndMonth && <div>{parsedDate.fullYearAndMonth}</div>}
       <DateButton active={parsedDate.active} day={parsedDate.day[1]}
-        selected={selection === parsedDate.formattedDate}
+        selected={selection.formattedDate === parsedDate.formattedDate}
         onClick={() => handleDateSelection(parsedDate.active, parsedDate.formattedDate)}>
         <em>{parsedDate.date}</em>
         <span>{parsedDate.day[0]}</span>
       </DateButton>
     </li>
+  );
+
+  const handleMovieSelection = async (active, movieNumber) => {
+    if (active) {
+      setSelection({ ...selection, movieNumber: movieNumber });
+      await postBookingData({
+        playDe: selection.formattedDate,
+        movieNo1: movieNumber
+      });
+    }
+  }
+
+  const movieRating = {
+    AD01: '/icons/age-small-all.png',
+    AD02: '/icons/age-small-12.png',
+    AD03: '/icons/age-small-15.png',
+    AD04: '/icons/age-small-19.png'
+  };
+
+  const movieItems = movies.map(movie =>
+    <MovieItem key={movie.movieNo} active={movie.formAt === 'Y'}
+      movieRating={movieRating[movie.admisClassCd]} selected={selection.movieNumber === movie.movieNo}>
+      <span />
+      <button onClick={() => handleMovieSelection(movie.formAt === 'Y', movie.movieNo)}>
+        {movie.movieNm}
+      </button>
+    </MovieItem>
   );
 
   return (
@@ -161,9 +298,15 @@ const Booking = ({ data }) => {
         <meta name="description" content="예매 페이지입니다." />
       </Head>
       <StyledArticle>
-        <CalendarWrapper ref={scrollRef}>
+        <CalendarWrapper ref={scrollRef} horizontal>
           <HorizontalCalendar>{calendarItems}</HorizontalCalendar>
         </CalendarWrapper>
+        <ListsWrapper>
+          <MovieListBox>
+            <h1>영화</h1>
+            <MovieList>{movieItems}</MovieList>
+          </MovieListBox>
+        </ListsWrapper>
       </StyledArticle>
     </>
   );
@@ -197,7 +340,7 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ req, res, 
   const data = resp.data;
 
   return {
-    props: { data },
+    props: { data, queryMovieNumber: movieNumber || '' },
   };
 });
 

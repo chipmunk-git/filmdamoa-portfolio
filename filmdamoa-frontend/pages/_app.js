@@ -42,6 +42,8 @@ const theme = {
     greyBg: '#f9f9f9',
     red: '#f81d37',
     freshRed: '#ff243e',
+    trackBg: '#efefef',
+    thumbBg: '#676767',
   },
   fontSize: {
     great: '1.25rem',

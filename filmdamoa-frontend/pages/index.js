@@ -273,7 +273,7 @@ const Index = ({ data }) => {
     .catch(err => console.log(err));
   }
 
-  const movieList = movies.map(movie =>
+  const movieItems = movies.map(movie =>
     <li key={movie.id}>
       <Link href={`/movie/${movie.id}`}>
         <a title="영화상세 보기">
@@ -323,7 +323,7 @@ const Index = ({ data }) => {
             </MoreMovieWrapper>
           </BoxOfficeTitle>
           <BoxOfficeBody>
-            {movieList}
+            {movieItems}
           </BoxOfficeBody>
         </BoxOfficeWrapper>
         <BoxOfficeFaker />

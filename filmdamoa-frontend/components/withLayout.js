@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import styled from 'styled-components';
-import { lighten, darken } from 'polished';
+import { lighten } from 'polished';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout, maintainAuth } from '../store/user/action';
 
@@ -137,7 +137,7 @@ const HeaderUl = styled(StyledUl)`
 `
 
 const StyledSection = styled.section`
-  min-height: 70vh;
+  min-height: calc(100vh - 11.625rem);
   padding: 3.625rem calc(50vw - 37.5rem);
   position: relative;
 
