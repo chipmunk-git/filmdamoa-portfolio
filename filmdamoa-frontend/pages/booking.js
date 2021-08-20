@@ -3,8 +3,9 @@ import Head from 'next/head';
 import styled, { css } from 'styled-components';
 import { darken } from 'polished';
 import * as cookie from 'cookie';
+import { decode } from 'html-entities';
 import { http, httpInNodeJs, postDataInNodeJs } from '../lib/http';
-import { numberReader, createParsedDates } from '../lib/dateFunction';
+import { numberReader, createParsedDates, createParsedTheaters } from '../lib/bookingFunction';
 import { StyledArticle, scrollable } from '../lib/styledComponents';
 import { withLayout } from '../components';
 import { wrapper } from '../store/store';
@@ -51,13 +52,17 @@ const HorizontalCalendar = styled.ul`
   }
 `
 
+const buttonStyles = css`
+  cursor: pointer;
+  background-color: transparent;
+  border: 0;
+`
+
 const DateButton = styled.button`
   display: block;
   width: 5.125rem;
   padding: 0.5rem 0.75rem;
-  cursor: pointer;
-  background-color: transparent;
-  border: 0;
+  ${buttonStyles};
 
   &:hover {
     border-bottom: 0.125rem solid #503396;
@@ -143,7 +148,7 @@ const MovieListBox = styled.div`
 `
 
 const MovieList = styled.ul`
-  height: 32.5rem;
+  height: 33.5rem;
   padding: 0;
   margin: 0.875rem 0;
   list-style: none;
@@ -191,11 +196,9 @@ const MovieItem = styled.li`
 
   button {
     width: calc(100% - 20px);
-    padding: 0.375rem 0.375rem;
-    cursor: pointer;
-    background-color: transparent;
-    border: 0;
+    padding: 0.375rem;
     text-align: left;
+    ${buttonStyles};
 
     ${({ theme, active, selected }) => css`
       ${!active &&
@@ -214,12 +217,124 @@ const MovieItem = styled.li`
   }
 `
 
+const TheaterListBox = styled(MovieListBox)`
+  width: 32%;
+
+  div {
+    display: flex;
+    margin: 0.875rem 0;
+  }
+`
+
+const TheaterTabButton = styled.button`
+  width: 50%;
+  padding: 0.375rem;
+  ${buttonStyles};
+
+  ${({ theme, selected }) => css`
+    border-top: 1px solid ${theme.colors.greyLight};
+    border-bottom: 1px solid ${theme.colors.thumbBg};
+
+    &:first-child {
+      border-left: 1px solid ${theme.colors.greyLight};
+    }
+
+    &:last-child {
+      border-right: 1px solid ${theme.colors.greyLight};
+    }
+
+    ${selected &&
+      css`
+        border: 1px solid ${theme.colors.thumbBg};
+        border-bottom: 1px solid transparent;
+
+        &:first-child {
+          border-left: 1px solid ${theme.colors.thumbBg};
+        }
+
+        &:last-child {
+          border-right: 1px solid ${theme.colors.thumbBg};
+        }
+      `
+    }
+  `}
+`
+
+const TheaterList = styled(MovieList)`
+  width: 50%;
+  height: 30.5rem;
+  margin: 0;
+
+  &:not(:last-child) {
+    border-right: 1px solid ${({ theme }) => theme.colors.greyLight};
+  }
+
+  li {
+    font-size: ${({ theme }) => theme.fontSize.medium};
+  }
+`
+
+const TheaterDistrictButton = styled.button`
+  width: 100%;
+  padding: 0.375rem;
+  text-align: left;
+  ${buttonStyles};
+
+  ${({ theme, selected }) => css`
+    ${selected &&
+      css`
+        background-color: ${theme.colors.greyLight};
+      `
+    }
+  `}
+`
+
+const TheaterButton = styled.button`
+  width: 100%;
+  padding: 0.375rem;
+  text-align: left;
+  ${buttonStyles};
+
+  ${({ theme, active, selected }) => css`
+    ${active ?
+      css`
+        &:hover {
+          background-color: ${darken(0.05, 'white')};
+        }
+      ` :
+      css`
+        color: ${theme.colors.thumbBg};
+        cursor: default;
+        opacity: 0.5;
+      `
+    }
+
+    ${selected &&
+      css`
+        color: white;
+        background-color: ${theme.colors.thumbBg};
+
+        &:hover {
+          background-color: ${theme.colors.thumbBg};
+        }
+      `
+    }
+  `}
+`
+
 const Booking = ({ data, queryMovieNumber }) => {
   const [parsedDates, setParsedDates] = useState(createParsedDates(data.movieFormDeList));
   const [movies, setMovies] = useState(data.movieList);
+  const [parsedTheaters, setParsedTheaters] = useState({
+    areaTheater: createParsedTheaters(data.areaBrchList),
+    specialTheater: createParsedTheaters(data.spclbBrchList)
+  });
   const [selection, setSelection] = useState({
     formattedDate: parsedDates[0]['formattedDate'],
-    movieNumber: queryMovieNumber
+    movieNumber: queryMovieNumber,
+    theaterTab: 'areaTheater',
+    theaterDistrict: { areaTheater: null, specialTheater: null },
+    branchNumber: ['', '', '']
   });
 
   const scrollRef = useRef();
@@ -240,6 +355,10 @@ const Booking = ({ data, queryMovieNumber }) => {
   const postBookingData = reqObj => http.post('/booking', reqObj).then(resp => {
     setParsedDates(createParsedDates(resp.data.movieFormDeList));
     setMovies(resp.data.movieList);
+    setParsedTheaters({
+      areaTheater: createParsedTheaters(resp.data.areaBrchList),
+      specialTheater: createParsedTheaters(resp.data.spclbBrchList)
+    });
   }).catch(err => console.log(err));
 
   const handleDateSelection = async (active, formattedDate) => {
@@ -247,7 +366,10 @@ const Booking = ({ data, queryMovieNumber }) => {
       setSelection({ ...selection, formattedDate: formattedDate });
       await postBookingData({
         playDe: formattedDate,
-        movieNo1: selection.movieNumber
+        movieNo1: selection.movieNumber,
+        brchNo1: selection['branchNumber'][0],
+        spclbYn1: selection['branchNumber'][1],
+        theabKindCd1: selection['branchNumber'][2]
       });
     }
   }
@@ -269,7 +391,10 @@ const Booking = ({ data, queryMovieNumber }) => {
       setSelection({ ...selection, movieNumber: movieNumber });
       await postBookingData({
         playDe: selection.formattedDate,
-        movieNo1: movieNumber
+        movieNo1: movieNumber,
+        brchNo1: selection['branchNumber'][0],
+        spclbYn1: selection['branchNumber'][1],
+        theabKindCd1: selection['branchNumber'][2]
       });
     }
   }
@@ -291,6 +416,46 @@ const Booking = ({ data, queryMovieNumber }) => {
     </MovieItem>
   );
 
+  const handleTheaterTabToArea = () => setSelection({ ...selection, theaterTab: 'areaTheater' });
+  const handleTheaterTabToSpecial = () => setSelection({ ...selection, theaterTab: 'specialTheater' });
+  const handleTheaterDistrict = (theaterTab, index) => setSelection({
+    ...selection,
+    theaterDistrict: { ...selection.theaterDistrict, [theaterTab]: index }
+  });
+
+  const handleTheaterSelection = async (active, branchNumber) => {
+    if (active) {
+      setSelection({ ...selection, branchNumber: branchNumber });
+      await postBookingData({
+        playDe: selection.formattedDate,
+        movieNo1: selection.movieNumber,
+        brchNo1: branchNumber[0],
+        spclbYn1: branchNumber[1],
+        theabKindCd1: branchNumber[2]
+      });
+    }
+  }
+
+  const theaterDistrictItems = parsedTheaters[selection.theaterTab].map((parsedTheater, index) =>
+    <li key={parsedTheater[0]['areaCd']}>
+      <TheaterDistrictButton selected={selection['theaterDistrict'][selection.theaterTab] === index}
+        onClick={() => handleTheaterDistrict(selection.theaterTab, index)}>
+        {parsedTheater[0]['areaCdNm']}({parsedTheater[0]['formBrchCnt']})
+      </TheaterDistrictButton>
+    </li>
+  );
+
+  const theaterItems = (parsedTheaters[selection.theaterTab][selection['theaterDistrict'][selection.theaterTab]] || []).map(parsedTheater =>
+    <li key={parsedTheater['brchNo']}>
+      <TheaterButton active={parsedTheater['brchFormAt'] === 'Y'}
+        selected={selection['branchNumber'][0] === parsedTheater['brchNo'] && selection['branchNumber'][2] === parsedTheater['areaCd']}
+        onClick={() => handleTheaterSelection(parsedTheater['brchFormAt'] === 'Y',
+          [parsedTheater['brchNo'], parsedTheater['oriAreaCd'] ? 'Y' : 'N', parsedTheater['areaCd']])}>
+        {decode(parsedTheater['brchNm'])}
+      </TheaterButton>
+    </li>
+  );
+
   return (
     <>
       <Head>
@@ -306,6 +471,19 @@ const Booking = ({ data, queryMovieNumber }) => {
             <h1>영화</h1>
             <MovieList>{movieItems}</MovieList>
           </MovieListBox>
+          <TheaterListBox>
+            <h1>극장</h1>
+            <div>
+              <TheaterTabButton selected={selection.theaterTab === 'areaTheater'}
+                onClick={handleTheaterTabToArea}>전체</TheaterTabButton>
+              <TheaterTabButton selected={selection.theaterTab === 'specialTheater'}
+                onClick={handleTheaterTabToSpecial}>특별관</TheaterTabButton>
+            </div>
+            <div>
+              <TheaterList>{theaterDistrictItems}</TheaterList>
+              <TheaterList>{theaterItems}</TheaterList>
+            </div>
+          </TheaterListBox>
         </ListsWrapper>
       </StyledArticle>
     </>

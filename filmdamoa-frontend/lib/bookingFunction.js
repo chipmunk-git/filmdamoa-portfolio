@@ -71,3 +71,22 @@ export const createParsedDates = movieFormDateList => {
 
   return parsedDates;
 }
+
+export const createParsedTheaters = theaters => {
+  const parsedTheaters = [];
+  const parsedTheater = [];
+
+  for (let i = 0; i < theaters.length; i++) {
+    if (i === 0 || theaters[i]['areaCd'] === theaters[i - 1]['areaCd']) {
+      parsedTheater.push(theaters[i]);
+
+      if (i === theaters.length - 1) parsedTheaters.push(parsedTheater.slice());
+    } else {
+      parsedTheaters.push(parsedTheater.slice());
+      parsedTheater.length = 0;
+      parsedTheater.push(theaters[i]);
+    }
+  }
+
+  return parsedTheaters;
+}
