@@ -7,6 +7,7 @@ import { decode } from 'html-entities';
 import { http, httpInNodeJs, postDataInNodeJs } from '../lib/http';
 import { numberReader, createParsedDates, createParsedTheaters } from '../lib/bookingFunction';
 import { StyledArticle, scrollable } from '../lib/styledComponents';
+import storage from '../lib/storage';
 import { withLayout } from '../components';
 import { wrapper } from '../store/store';
 import { setAccessToken } from '../store/user/action';
@@ -134,6 +135,10 @@ const DateButton = styled.button`
 const ListsWrapper = styled.div`
   display: flex;
   ${wrapperStyles};
+
+  @media ${({ theme }) => theme.media.laptop} {
+    flex-wrap: wrap;
+  }
 `
 
 const MovieListBox = styled.div`
@@ -144,6 +149,14 @@ const MovieListBox = styled.div`
   h1 {
     margin: 0.875rem 0;
     font-size: ${({ theme }) => theme.fontSize.large};
+  }
+
+  @media ${({ theme }) => theme.media.laptop} {
+    width: 45%;
+  }
+
+  @media ${({ theme }) => theme.media.mobile} {
+    width: 100%;
   }
 `
 
@@ -223,6 +236,14 @@ const TheaterListBox = styled(MovieListBox)`
   div {
     display: flex;
     margin: 0.875rem 0;
+  }
+
+  @media ${({ theme }) => theme.media.laptop} {
+    width: 55%;
+  }
+
+  @media ${({ theme }) => theme.media.mobile} {
+    width: 100%;
   }
 `
 
@@ -322,6 +343,162 @@ const TheaterButton = styled.button`
   `}
 `
 
+const TimeListBox = styled.div`
+  width: 43%;
+  border: 1px solid ${({ theme }) => theme.colors.greyLight};
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 0.875rem;
+    margin: 0.875rem 0;
+
+    h1 {
+      margin: 0;
+      font-size: ${({ theme }) => theme.fontSize.large};
+    }
+
+    div {
+      display: flex;
+      align-items: center;
+      font-size: ${({ theme }) => theme.fontSize.small};
+    }
+  }
+
+  @media ${({ theme }) => theme.media.laptop} {
+    width: 100%;
+  }
+`
+
+const TimeIcon = styled.i`
+  display: inline-block;
+  margin: 0 0.125rem 0 0.5rem;
+  overflow: hidden;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+
+  ${({ time }) => css`
+    ${time !== 'MNIGHT' ?
+      css`
+        width: 14px;
+        height: 14px;
+
+        ${time === 'ERYM' ?
+          css`
+            background-image: url('/icons/time-sun.png');
+          ` :
+          css`
+            background-image: url('/icons/time-brunch.png');
+          `
+        }
+      ` :
+      css`
+        width: 12px;
+        height: 12px;
+        background-image: url('/icons/time-moon.png');
+      `
+    }
+  `}
+`
+
+const TimeList = styled(MovieList)`
+  li {
+    font-size: ${({ theme }) => theme.fontSize.medium};
+  }
+
+  li:not(:last-child) {
+    border-bottom: 1px solid ${({ theme }) => theme.colors.greyLight};
+  }
+`
+
+const TimeButton = styled.button`
+  width: 100%;
+  padding: 0.375rem;
+  ${buttonStyles};
+
+  &:hover {
+    background-color: ${darken(0.05, 'white')};
+  }
+
+  > span {
+    display: inline-flex;
+    flex-direction: column;
+    min-height: 3.375rem;
+    vertical-align: top;
+  }
+`
+
+const MovieLegend = styled.span`
+  width: 1.25rem;
+  padding: 0.25rem 0 0 0;
+
+  i {
+    margin: 0.25rem auto;
+  }
+`
+
+const MovieTime = styled.span`
+  width: 4.375rem;
+  padding: 0.25rem 0 0.25rem 0.375rem;
+  text-align: left;
+
+  strong {
+    font-size: ${({ theme }) => theme.fontSize.large};
+  }
+
+  em {
+    margin-top: 0.25rem;
+    font-size: ${({ theme }) => theme.fontSize.small};
+    font-style: normal;
+  }
+`
+
+const MovieTitle = styled.span`
+  width: calc(100% - 1.25rem - 4.375rem - 6.875rem);
+  padding: 0.25rem 0;
+  text-align: left;
+
+  strong {
+    font-weight: normal;
+  }
+
+  em {
+    margin-top: 0.375rem;
+    font-size: ${({ theme }) => theme.fontSize.small};
+    font-style: normal;
+  }
+`
+
+const MovieInfo = styled.span`
+  align-items: flex-end;
+  width: 6.875rem;
+  padding: 0 0.125rem 0 0;
+  text-align: right;
+  font-size: ${({ theme }) => theme.fontSize.small};
+
+  > span:last-child {
+    display: inline-block;
+    width: 3.75rem;
+    height: 1.25rem;
+    margin-top: 0.125rem;
+    text-align: center;
+    border: 1px solid ${({ theme }) => theme.colors.greyLight};
+
+    strong {
+      line-height: 1.25rem;
+      vertical-align: middle;
+      color: #01738b;
+    }
+
+    em {
+      line-height: 1.25rem;
+      vertical-align: middle;
+      color: ${({ theme }) => theme.colors.thumbBg};
+      font-style: normal;
+    }
+  }
+`
+
 const Booking = ({ data, queryMovieNumber }) => {
   const [parsedDates, setParsedDates] = useState(createParsedDates(data.movieFormDeList));
   const [movies, setMovies] = useState(data.movieList);
@@ -329,6 +506,7 @@ const Booking = ({ data, queryMovieNumber }) => {
     areaTheater: createParsedTheaters(data.areaBrchList),
     specialTheater: createParsedTheaters(data.spclbBrchList)
   });
+  const [bookableMovies, setBookableMovies] = useState(data.movieFormList);
   const [selection, setSelection] = useState({
     formattedDate: parsedDates[0]['formattedDate'],
     movieNumber: queryMovieNumber,
@@ -359,6 +537,7 @@ const Booking = ({ data, queryMovieNumber }) => {
       areaTheater: createParsedTheaters(resp.data.areaBrchList),
       specialTheater: createParsedTheaters(resp.data.spclbBrchList)
     });
+    setBookableMovies(resp.data.movieFormList);
   }).catch(err => console.log(err));
 
   const handleDateSelection = async (active, formattedDate) => {
@@ -456,6 +635,41 @@ const Booking = ({ data, queryMovieNumber }) => {
     </li>
   );
 
+  const handleTimeSelection = bookableMovie => {
+    if (confirm(`영화: ${bookableMovie.rpstMovieNm} / ${decode(bookableMovie.playKindNm)}\n` +
+                `상영 시간: ${bookableMovie.playStartTime} ~ ${bookableMovie.playEndTime}\n` +
+                `극장: ${decode(bookableMovie.brchNm)} / ${decode(bookableMovie.theabExpoNm)}\n` +
+                `좌석 현황: ${bookableMovie.restSeatCnt} / ${bookableMovie.totSeatCnt}\n` +
+                `\n예매 하시겠습니까?`)) {
+      storage.set('seatParameter', { branchNumber: selection['branchNumber'][0], scheduleNumber: bookableMovie.playSchdlNo });
+    }
+  }
+
+  const bookableMovieItems = (bookableMovies || []).map(bookableMovie =>
+    <li key={bookableMovie.playSchdlNo}>
+      <TimeButton onClick={() => handleTimeSelection(bookableMovie)}>
+        <MovieLegend>
+          {bookableMovie.playTyCd !== 'GERN' && <TimeIcon time={bookableMovie.playTyCd} title={bookableMovie.playTyCdNm} />}
+        </MovieLegend>
+        <MovieTime>
+          <strong title="상영 시작">{bookableMovie.playStartTime}</strong>
+          <em title="상영 종료">~{bookableMovie.playEndTime}</em>
+        </MovieTime>
+        <MovieTitle>
+          <strong>{bookableMovie.rpstMovieNm}</strong>
+          <em>{decode(bookableMovie.playKindNm)}</em>
+        </MovieTitle>
+        <MovieInfo>
+          <span title="극장">{decode(bookableMovie.brchNm)}<br />{decode(bookableMovie.theabExpoNm)}</span>
+          <span>
+            <strong title="잔여 좌석">{bookableMovie.restSeatCnt}</strong>
+            <em title="전체 좌석">/{bookableMovie.totSeatCnt}</em>
+          </span>
+        </MovieInfo>
+      </TimeButton>
+    </li>
+  );
+
   return (
     <>
       <Head>
@@ -484,6 +698,17 @@ const Booking = ({ data, queryMovieNumber }) => {
               <TheaterList>{theaterItems}</TheaterList>
             </div>
           </TheaterListBox>
+          <TimeListBox>
+            <div>
+              <h1>시간</h1>
+              <div>
+                <TimeIcon time="ERYM" title="조조" />조조
+                <TimeIcon time="BRUNCH" title="브런치" />브런치
+                <TimeIcon time="MNIGHT" title="심야" />심야
+              </div>
+            </div>
+            <TimeList>{bookableMovieItems}</TimeList>
+          </TimeListBox>
         </ListsWrapper>
       </StyledArticle>
     </>
