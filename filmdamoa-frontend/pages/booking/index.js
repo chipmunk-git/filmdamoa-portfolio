@@ -1,16 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import styled, { css } from 'styled-components';
 import { darken } from 'polished';
 import * as cookie from 'cookie';
 import { decode } from 'html-entities';
-import { http, httpInNodeJs, postDataInNodeJs } from '../lib/http';
-import { numberReader, createParsedDates, createParsedTheaters } from '../lib/bookingFunction';
-import { StyledArticle, scrollable } from '../lib/styledComponents';
-import storage from '../lib/storage';
-import { withLayout } from '../components';
-import { wrapper } from '../store/store';
-import { setAccessToken } from '../store/user/action';
+import { http, httpInNodeJs, postDataInNodeJs } from '../../lib/http';
+import { numberReader, createParsedDates, createParsedTheaters } from '../../lib/bookingFunction';
+import { movieRating } from '../../lib/bookingObject';
+import { StyledArticle, scrollable } from '../../lib/styledComponents';
+import storage from '../../lib/storage';
+import { withLayout } from '../../components';
+import { wrapper } from '../../store/store';
+import { setAccessToken } from '../../store/user/action';
 
 const wrapperStyles = css`
   width: 72rem;
@@ -499,7 +501,9 @@ const MovieInfo = styled.span`
   }
 `
 
-const Booking = ({ data, queryMovieNumber }) => {
+const Index = ({ data, queryMovieNumber }) => {
+  const router = useRouter();
+
   const [parsedDates, setParsedDates] = useState(createParsedDates(data.movieFormDeList));
   const [movies, setMovies] = useState(data.movieList);
   const [parsedTheaters, setParsedTheaters] = useState({
@@ -578,13 +582,6 @@ const Booking = ({ data, queryMovieNumber }) => {
     }
   }
 
-  const movieRating = {
-    AD01: '/icons/age-small-all.png',
-    AD02: '/icons/age-small-12.png',
-    AD03: '/icons/age-small-15.png',
-    AD04: '/icons/age-small-19.png'
-  };
-
   const movieItems = movies.map(movie =>
     <MovieItem key={movie.movieNo} active={movie.formAt === 'Y'}
       movieRating={movieRating[movie.admisClassCd]} selected={selection.movieNumber === movie.movieNo}>
@@ -642,6 +639,7 @@ const Booking = ({ data, queryMovieNumber }) => {
                 `좌석 현황: ${bookableMovie.restSeatCnt} / ${bookableMovie.totSeatCnt}\n` +
                 `\n예매 하시겠습니까?`)) {
       storage.set('seatParameter', { branchNumber: selection['branchNumber'][0], scheduleNumber: bookableMovie.playSchdlNo });
+      router.push('/booking/seat');
     }
   }
 
@@ -747,4 +745,4 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ req, res, 
   };
 });
 
-export default withLayout(Booking);
+export default withLayout(Index);

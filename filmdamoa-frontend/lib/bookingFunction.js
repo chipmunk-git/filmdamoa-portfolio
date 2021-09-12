@@ -90,3 +90,16 @@ export const createParsedTheaters = theaters => {
 
   return parsedTheaters;
 }
+
+export const parseSeatDatas = seatData => {
+  const parsedRows = Array.from({ length: seatData.seatInfoSD01.rowNoMax + 1 }, () => null);
+  const parsedSeats = Array.from(Array(seatData.seatInfoSD01.rowNoMax + 1), () => Array(seatData.seatInfoSD01.colNoMax + 1).fill(null));
+
+  seatData.seatListSD01.forEach(element => {
+    if (!parsedRows[element.rowNo]) parsedRows[element.rowNo] = element.rowNm;
+    parsedSeats[element.rowNo][element.colNo] = element;
+  });
+  seatData.seatListSD05.forEach(element => parsedSeats[element.rowNo][element.colNo] = element);
+
+  return { parsedRowList: parsedRows, parsedSeatList: parsedSeats };
+}
