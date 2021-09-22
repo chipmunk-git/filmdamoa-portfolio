@@ -19,7 +19,7 @@ export const AuthErrorWrapper = styled.div`
 `
 
 export const scrollable = css`
-  ${({ theme, horizontal }) => {
+  ${({ theme }) => {
     const trackBg = theme.colors.trackBg;
     const thumbBg = theme.colors.thumbBg;
 
@@ -45,14 +45,8 @@ export const scrollable = css`
       /* Chrome */
       &::-webkit-scrollbar-track {
         background-color: ${trackBg};
-        ${horizontal ?
-            css`
-              height: 4px;
-            ` :
-            css`
-              width: 4px;
-            `
-        }
+        width: 4px;
+        height: 4px;
       }
 
       &::-webkit-scrollbar-thumb {
@@ -62,14 +56,8 @@ export const scrollable = css`
       }
 
       &::-webkit-scrollbar {
-        ${horizontal ?
-            css`
-              height: 8px;
-            ` :
-            css`
-              width: 8px;
-            `
-        }
+        width: 8px;
+        height: 8px;
       }
     `
   }}

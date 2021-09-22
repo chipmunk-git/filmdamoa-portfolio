@@ -675,7 +675,7 @@ const Index = ({ data, queryMovieNumber }) => {
         <meta name="description" content="예매 페이지입니다." />
       </Head>
       <StyledArticle>
-        <CalendarWrapper ref={scrollRef} horizontal>
+        <CalendarWrapper ref={scrollRef}>
           <HorizontalCalendar>{calendarItems}</HorizontalCalendar>
         </CalendarWrapper>
         <ListsWrapper>
