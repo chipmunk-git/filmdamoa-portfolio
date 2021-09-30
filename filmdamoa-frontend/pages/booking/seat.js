@@ -6,6 +6,7 @@ import { darken } from 'polished';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as cookie from 'cookie';
 import { decode } from 'html-entities';
+import { useSelector } from 'react-redux';
 import { http } from '../../lib/http';
 import { parseSeatDatas } from '../../lib/bookingFunction';
 import { movieRating } from '../../lib/bookingObject';
@@ -197,8 +198,8 @@ const SeatButton = styled.button`
   position: absolute;
   left: ${({ colNo }) => buttonWidth * colNo}rem;
 
-  ${({ seatKind, selected }) => css`
-    ${seatKind[1] !== 'SCT04' && seatKind[1] !== 'STOP_SELL' &&
+  ${({ seatKind, selected, spare }) => css`
+    ${seatKind[1] !== 'SCT04' && seatKind[1] !== 'STOP_SELL' && spare &&
       css`
         &:hover {
           background-image: url('/icons/bg-seat-condition-choice.png');
@@ -507,6 +508,10 @@ const ButtonWrapper = styled.div`
 `
 
 const Seat = () => {
+  const { username } = useSelector(state => ({
+    username: state.user.username
+  }));
+
   const router = useRouter();
 
   const [audiences, setAudiences] = useState([
@@ -519,6 +524,15 @@ const Seat = () => {
   const [movieDetailInfo, setMovieDetailInfo] = useState({});
   const [selections, setSelections] = useState(Array.from({ length: 8 }, () => null));
 
+  const postSeatData = async reqObj => {
+    await http.post('/booking/seat', reqObj).then(resp => {
+      const { parsedRowList, parsedSeatList } = parseSeatDatas(resp.data);
+      setParsedRows(parsedRowList);
+      setParsedSeats(parsedSeatList);
+      setMovieDetailInfo(resp.data.movieDtlInfo);
+    }).catch(err => console.log(err));
+  }
+
   useEffect(() => {
     const seatParameter = storage.get('seatParameter');
     if (!seatParameter) {
@@ -527,15 +541,7 @@ const Seat = () => {
     }
 
     const reqObj = { playSchdlNo: seatParameter.scheduleNumber, brchNo: seatParameter.branchNumber };
-    const postSeatData = async () => {
-      await http.post('/booking/seat', reqObj).then(resp => {
-        const { parsedRowList, parsedSeatList } = parseSeatDatas(resp.data);
-        setParsedRows(parsedRowList);
-        setParsedSeats(parsedSeatList);
-        setMovieDetailInfo(resp.data.movieDtlInfo);
-      });
-    }
-    postSeatData();
+    postSeatData(reqObj);
   }, []);
 
   const scrollRef = useRef();
@@ -553,12 +559,38 @@ const Seat = () => {
     }
   }, []);
 
+  const handleInitialization = () => {
+    setAudiences(audiences => audiences.map(audience => ({ ...audience, count: 0 })));
+
+    const seatParameter = storage.get('seatParameter');
+    const reqObj = { playSchdlNo: seatParameter.scheduleNumber, brchNo: seatParameter.branchNumber };
+    postSeatData(reqObj);
+
+    setSelections(Array.from({ length: 8 }, () => null));
+  }
+
+  const handleDecrease = category => {
+    if (selectedCount < totalCount) {
+      setAudiences(audiences => audiences.map(audience => audience.count > 0 &&
+        audience.category === category ? { ...audience, count: audience.count - 1 } : audience
+      ));
+    }
+  }
+
+  const handleIncrease = category => {
+    if (totalCount < 8) {
+      setAudiences(audiences => audiences.map(audience =>
+        audience.category === category ? { ...audience, count: audience.count + 1 } : audience
+      ));
+    }
+  }
+
   const counterItems = audiences.map(audience =>
     <li key={audience.category}>
       {audience.category}
-      <button>-</button>
+      <button onClick={() => handleDecrease(audience.category)}>-</button>
       <span>{audience.count}</span>
-      <button>+</button>
+      <button onClick={() => handleIncrease(audience.category)}>+</button>
     </li>
   );
 
@@ -575,12 +607,49 @@ const Seat = () => {
     GTLR: ['/icons/img-door-left-right.png', '좌우측 출입구']
   };
 
+  const handleSeatSelection = (seatKind, seatName, seatUniqueNumber) => {
+    // 코드 출처: https://stackoverflow.com/a/4340339 및 https://stackoverflow.com/a/29829361 기반
+    const reA = /[^a-zA-Z]/g;
+    const reN = /[^0-9]/g;
+
+    const sortAlphaNum = (a, b) => {
+      if (a === b) return 0;
+      else if (a === null) return 1;
+      else if (b === null) return -1;
+      else {
+        const aA = a.seatName.replace(reA, '');
+        const bA = b.seatName.replace(reA, '');
+
+        if (aA === bA) {
+          const aN = parseInt(a.seatName.replace(reN, ''), 10);
+          const bN = parseInt(b.seatName.replace(reN, ''), 10);
+
+          return aN === bN ? 0 : aN > bN ? 1 : -1;
+        } else {
+          return aA > bA ? 1 : -1;
+        }
+      }
+    }
+
+    if (seatKind !== 'SCT04' && seatKind !== 'STOP_SELL') {
+      if (selections.some(selection => (selection && selection.seatName) === seatName)) {
+        setSelections(selections => selections.map(selection => (selection && selection.seatName) === seatName ? null : selection).sort(sortAlphaNum));
+      } else if (selectedCount < totalCount) {
+        setSelections(selections => selections.slice(0, 7).concat({ seatName, seatUniqueNumber }).sort(sortAlphaNum));
+      }
+    }
+  }
+
+  const selectedCount = selections.filter(Boolean).length;
+  const totalCount = audiences.reduce((prevTotal, audience) => prevTotal + audience.count, 0);
+
   const parsedSeatItems = parsedSeats.map((parsedSeatRow, index) =>
     <li key={index}>
       {parsedSeatRow.map(parsedSeatCol =>
         parsedSeatCol && (parsedSeatCol.rowNm
           ? <SeatButton key={parsedSeatCol.colNo} colNo={parsedSeatCol.colNo} seatKind={[parsedSeatCol.seatClassCd, parsedSeatCol.seatStatCd]}
-              selected={selections.includes(`${parsedSeatCol.rowNm}${parsedSeatCol.seatNo}`)}>
+              selected={selections.some(selection => (selection && selection.seatName) === `${parsedSeatCol.rowNm}${parsedSeatCol.seatNo}`)} spare={selectedCount < totalCount}
+              onClick={() => handleSeatSelection(parsedSeatCol.seatStatCd, `${parsedSeatCol.rowNm}${parsedSeatCol.seatNo}`, parsedSeatCol.seatUniqNo)}>
               {parsedSeatCol.seatNo}
             </SeatButton>
           : <ExitImg key={parsedSeatCol.colNo} colNo={parsedSeatCol.colNo} src={exitIcon[parsedSeatCol.gateTyCd][0]} alt={exitIcon[parsedSeatCol.gateTyCd][1]} />
@@ -589,10 +658,8 @@ const Seat = () => {
     </li>
   );
 
-  const totalCount = audiences.reduce((prevTotal, audience) => prevTotal + audience.count, 0);
-
   const selectionItems = selections.map((selection, index) =>
-    <SelectionItem key={index} totalCount={totalCount} selected={selection}>{selection === null ? '-' : selection}</SelectionItem>
+    <SelectionItem key={index} totalCount={totalCount} selected={selection && selection.seatName}>{selection === null ? '-' : selection.seatName}</SelectionItem>
   );
 
   const audienceItems = audiences.map(audience => audience.count > 0 &&
@@ -604,7 +671,20 @@ const Seat = () => {
 
   const totalAmount = audiences.reduce((prevTotal, audience) => prevTotal + audience.count * audience.fee, 0);
 
-  const selectedCount = selections.filter(Boolean).length;
+  const handlePrevMotion = () => router.back();
+
+  const handleNextMotion = active => {
+    if (active) {
+      storage.set('billParameter', { audiences, selections: selections.filter(Boolean) });
+
+      if (username) {
+        router.push('/booking/bill');
+      } else {
+        storage.set('destination', '/booking/bill');
+        router.push('/login');
+      }
+    }
+  }
 
   return (
     <>
@@ -617,7 +697,7 @@ const Seat = () => {
           <MovieSeatBox>
             <HeadingWrapper>
               <h1>관람인원선택</h1>
-              <button><StyledSync icon={["fas", "sync"]} /> 초기화</button>
+              <button onClick={handleInitialization}><StyledSync icon={["fas", "sync"]} /> 초기화</button>
             </HeadingWrapper>
             <CounterList>{counterItems}</CounterList>
             <SeatListWrapper colLength={parsedSeats[0] && parsedSeats[0].length} ref={scrollRef}>
@@ -691,8 +771,8 @@ const Seat = () => {
               </div>
             </ResultWrapper>
             <ButtonWrapper active={totalCount !== 0 && totalCount === selectedCount}>
-              <button>이전</button>
-              <button>다음</button>
+              <button onClick={handlePrevMotion}>이전</button>
+              <button onClick={() => handleNextMotion(totalCount !== 0 && totalCount === selectedCount)}>다음</button>
             </ButtonWrapper>
           </MovieInfoBox>
         </StyledWrapper>
