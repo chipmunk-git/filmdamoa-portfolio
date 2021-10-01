@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import * as cookie from 'cookie';
 import { InputWithLabel, UtilityButton, withAuth } from '../components';
 import { AuthErrorWrapper } from '../lib/styledComponents';
+import storage from '../lib/storage';
 import { login } from '../store/user/action';
 
 const Aligner = styled.div`
@@ -48,7 +49,10 @@ const Login = () => {
     try {
       setInAction(true);
       await dispatch(login({ username, password }));
-      router.replace('/');
+      const destination = storage.get('destination');
+
+      if (destination) router.replace(destination);
+      else router.replace('/');
     } catch (e) {
       setInAction(false);
 

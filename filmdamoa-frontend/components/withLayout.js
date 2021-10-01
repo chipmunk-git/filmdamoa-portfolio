@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import styled from 'styled-components';
 import { lighten } from 'polished';
 import { useSelector, useDispatch } from 'react-redux';
+import storage from '../lib/storage';
 import { logout, maintainAuth } from '../store/user/action';
 
 const StyledHeader = styled.header`
@@ -198,6 +199,7 @@ const withLayout = (WrappedComponent) => {
 
     const handleLogout = async () => {
       await dispatch(logout());
+      storage.remove('destination');
       router.reload();
     }
 
