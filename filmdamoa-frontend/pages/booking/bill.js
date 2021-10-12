@@ -1,15 +1,236 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as cookie from 'cookie';
 import { decode } from 'html-entities';
 import { http } from '../../lib/http';
 import { movieRating } from '../../lib/bookingObject';
-import { StyledArticle } from '../../lib/styledComponents';
+import { StyledArticle, StyledWrapper, MovieSeatBox, MovieInfoBox, TitleWrapper } from '../../lib/styledComponents';
 import storage from '../../lib/storage';
 import { withLayout } from '../../components';
 import { wrapper } from '../../store/store';
 import { setAccessToken } from '../../store/user/action';
+
+const LeadBox = styled(MovieSeatBox)`
+  h1 {
+    margin: 0.75rem 0;
+    color: ${({ theme }) => theme.colors.black};
+    font-size: ${({ theme }) => theme.fontSize.large};
+  }
+
+  div {
+    padding: 1.25rem;
+    border: 1px solid ${({ theme }) => theme.colors.greyLight};
+    border-radius: 0.625rem;
+    color: #434343;
+  }
+
+  ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+
+    li {
+      display: inline-block;
+      margin: 0.375rem 0;
+
+      &:not(:last-child) {
+        margin-right: 1.875rem;
+      }
+    }
+  }
+
+  label {
+    display: flex;
+    align-items: center;
+  }
+
+  input {
+    margin: 0 0.375rem 0 0;
+  }
+`
+
+const DetailWrapper = styled(TitleWrapper)`
+  border-bottom: none;
+
+  b {
+    display: inline-block;
+    color: silver;
+    font-size: ${({ theme }) => theme.fontSize.medium};
+    font-weight: normal;
+
+    &:first-of-type {
+      width: 100%;
+      margin-top: 0.125rem;
+    }
+
+    &:not(:first-of-type) {
+      width: 50%;
+      max-width: 7rem;
+    }
+
+    &:last-of-type {
+      padding-left: 0.5rem;
+      position: relative;
+
+      &::before {
+        display: block;
+        width: 1px;
+        height: 0.875rem;
+        content: '';
+        background-color: #747474;
+        position: absolute;
+        bottom: 0.125rem;
+        left: calc(3.25rem - 50%);
+      }
+    }
+  }
+`
+
+const StyledClock = styled(FontAwesomeIcon)`
+  margin-right: 0.125rem;
+  font-size: ${({ theme }) => theme.fontSize.medium} !important;
+  color: whitesmoke;
+`
+
+const InterimWrapper = styled.div`
+  min-height: 13.5rem;
+  margin: 0 1.25rem;
+  font-size: ${({ theme }) => theme.fontSize.medium};
+
+  > div {
+    padding: 0.875rem 1.25rem;
+    border-radius: 0.25rem;
+    background-color: #434343;
+
+    div {
+      padding-top: 0.5rem;
+      margin-top: 0.5rem;
+      border-top: 1px solid #4d4d4d;
+
+      &::after {
+        display: block;
+        content: '';
+        clear: both;
+      }
+    }
+  }
+
+  ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+
+    li {
+      &::after {
+        display: block;
+        content: '';
+        clear: both;
+      }
+    }
+  }
+
+  i {
+    color: silver;
+    font-style: normal;
+
+    &:last-child {
+      float: right;
+      position: relative;
+      top: 0.125rem;
+    }
+  }
+
+  span {
+    &:last-child {
+      float: right;
+      position: relative;
+      top: -0.25rem;
+    }
+  }
+
+  b {
+    margin-right: 0.125rem;
+    font-size: ${({ theme }) => theme.fontSize.great};
+    font-weight: normal;
+    position: relative;
+    top: 0.125rem;
+  }
+`
+
+const ResultWrapper = styled.div`
+  padding: 0.75rem 0;
+  margin: 0 1.25rem;
+
+  div {
+    &:first-child {
+      position: relative;
+      bottom: -0.25rem;
+    }
+
+    &:last-child {
+      padding: 0.625rem 0;
+      margin-top: 0.375rem;
+      border-top: 1px solid #6a6a6c;
+    }
+
+    &::after {
+      display: block;
+      content: '';
+      clear: both;
+    }
+  }
+
+  span {
+    &:last-child {
+      float: right;
+      position: relative;
+      top: -0.625rem;
+    }
+  }
+
+  strong {
+    margin-right: 0.25rem;
+    color: #59bec9;
+    font-size: 1.75rem;
+    font-weight: normal;
+    position: relative;
+    top: 0.375rem;
+  }
+
+  i {
+    color: silver;
+    font-size: ${({ theme }) => theme.fontSize.medium};
+    font-style: normal;
+
+    &:last-child {
+      float: right;
+    }
+  }
+`
+
+const ButtonWrapper = styled.div`
+  button {
+    width: 50%;
+    height: 2.5rem;
+    cursor: pointer;
+    border: 0;
+    color: white;
+    font-size: ${({ theme }) => theme.fontSize.large};
+
+    &:first-child {
+      border-radius: 0 0 0 0.625rem;
+      background-color: #53565b;
+    }
+
+    &:last-child {
+      border-radius: 0 0 0.625rem 0;
+      background-color: #329eb1;
+    }
+  }
+`
 
 const Bill = () => {
   const router = useRouter();
@@ -51,7 +272,7 @@ const Bill = () => {
   const audienceItems = audiences.map(audience => audience.count > 0 &&
     <li key={audience.category}>
       <i>{audience.category} {audience.count}</i>
-      <i> {audience.count * audience.fee}</i>
+      <i>{(audience.count * audience.fee).toLocaleString()}</i>
     </li>
   );
 
@@ -64,8 +285,8 @@ const Bill = () => {
         <meta name="description" content="계산서 페이지입니다." />
       </Head>
       <StyledArticle>
-        <div>
-          <div>
+        <StyledWrapper>
+          <LeadBox>
             <h1>결제수단선택</h1>
             <div>
               <ul>
@@ -89,35 +310,35 @@ const Bill = () => {
                 </li>
               </ul>
             </div>
-          </div>
-          <div>
-            <div movieRating={movieRating[movieDetailInfo.admisClassCd]}>
+          </LeadBox>
+          <MovieInfoBox>
+            <DetailWrapper movieRating={movieRating[movieDetailInfo.admisClassCd]}>
               <span />
               <div>
                 <h1>{movieDetailInfo.movieNm}</h1>
                 <i>{movieDetailInfo.playKindName}</i>
-                <i>{movieDetailInfo.brchNm}/{movieDetailInfo.theabExpoNm}</i>
+                <b>{movieDetailInfo.brchNm}/{movieDetailInfo.theabExpoNm}</b>
                 <b>{movieDetailInfo.playDeAndDow}</b>
-                <b>{movieDetailInfo.playTime}</b>
+                <b><StyledClock icon={["far", "clock"]} />{movieDetailInfo.playTime}</b>
               </div>
-            </div>
-            <div>
+            </DetailWrapper>
+            <InterimWrapper>
               <div>
                 <ul>{audienceItems}</ul>
                 <div>
                   <span>금액</span>
                   <span>
-                    <b>{totalAmount}</b>
+                    <b>{totalAmount.toLocaleString()}</b>
                     원
                   </span>
                 </div>
               </div>
-            </div>
-            <div>
+            </InterimWrapper>
+            <ResultWrapper>
               <div>
                 <span>최종결제금액</span>
                 <span>
-                  <strong>{totalAmount}</strong>
+                  <strong>{totalAmount.toLocaleString()}</strong>
                   원
                 </span>
               </div>
@@ -125,13 +346,13 @@ const Bill = () => {
                 <i>결제수단</i>
                 <i>{checkedState}</i>
               </div>
-            </div>
-            <div>
+            </ResultWrapper>
+            <ButtonWrapper>
               <button>이전</button>
               <button>결제</button>
-            </div>
-          </div>
-        </div>
+            </ButtonWrapper>
+          </MovieInfoBox>
+        </StyledWrapper>
       </StyledArticle>
     </>
   );

@@ -5,7 +5,8 @@ import {
   faSync
 } from '@fortawesome/free-solid-svg-icons';
 import {
-  faHeart as farHeart
+  faHeart as farHeart,
+  faClock
 } from '@fortawesome/free-regular-svg-icons';
 // import { } from '@fortawesome/free-brands-svg-icons';
 
@@ -13,5 +14,6 @@ library.add(
   faPlus,
   fasHeart,
   farHeart,
-  faSync
+  faSync,
+  faClock
 );

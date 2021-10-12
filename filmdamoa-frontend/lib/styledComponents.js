@@ -62,3 +62,71 @@ export const scrollable = css`
     `
   }}
 `
+
+export const StyledWrapper = styled.div`
+  display: flex;
+
+  @media ${({ theme }) => theme.media.laptop} {
+    flex-direction: column;
+  }
+`
+
+export const MovieSeatBox = styled.div`
+  width: calc(70% - 1.25rem);
+  margin-right: 1.25rem;
+  border-top: 1px solid black;
+
+  @media ${({ theme }) => theme.media.laptop} {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 1.25rem;
+  }
+`
+
+export const MovieInfoBox = styled.div`
+  width: 30%;
+  border-radius: 0.625rem;
+  background-color: #333;
+  color: white;
+
+  @media ${({ theme }) => theme.media.laptop} {
+    width: 100%;
+  }
+`
+
+export const TitleWrapper = styled.div`
+  display: flex;
+  padding: 0.75rem 0;
+  margin: 0 1.25rem;
+  border-bottom: 1px solid #434343;
+
+  span {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-image: url(${({ movieRating }) => movieRating});
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  div {
+    width: calc(100% - 20px - 6px);
+    margin-left: 6px;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: ${({ theme }) => theme.fontSize.regular};
+    font-weight: normal;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  i {
+    margin-top: 0.375rem;
+    color: #aaa;
+    font-size: ${({ theme }) => theme.fontSize.medium};
+    font-style: normal;
+  }
+`
