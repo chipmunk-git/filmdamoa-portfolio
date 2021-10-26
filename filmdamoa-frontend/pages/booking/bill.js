@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as cookie from 'cookie';
 import { decode } from 'html-entities';
+import { useSelector } from 'react-redux';
 import { http } from '../../lib/http';
 import { movieRating } from '../../lib/bookingObject';
 import { StyledArticle, StyledWrapper, MovieSeatBox, MovieInfoBox, TitleWrapper } from '../../lib/styledComponents';
@@ -233,6 +234,10 @@ const ButtonWrapper = styled.div`
 `
 
 const Bill = () => {
+  const { username } = useSelector(state => ({
+    username: state.user.username
+  }));
+
   const router = useRouter();
 
   const [checkedState, setCheckedState] = useState('신용/체크카드');
@@ -269,6 +274,23 @@ const Bill = () => {
     postBillData(reqObj);
   }, []);
 
+  useEffect(() => {
+    const jquery = document.createElement('script');
+    jquery.src = 'https://code.jquery.com/jquery-1.12.4.min.js';
+    const iamport = document.createElement('script');
+    iamport.src = 'https://cdn.iamport.kr/js/iamport.payment-1.2.0.js';
+
+    document.head.appendChild(jquery);
+    document.head.appendChild(iamport);
+
+    return () => {
+      document.head.removeChild(jquery);
+      document.head.removeChild(iamport);
+    }
+  }, []);
+
+  const handleChange = evt => setCheckedState(evt.target.value);
+
   const audienceItems = audiences.map(audience => audience.count > 0 &&
     <li key={audience.category}>
       <i>{audience.category} {audience.count}</i>
@@ -277,6 +299,86 @@ const Bill = () => {
   );
 
   const totalAmount = audiences.reduce((prevTotal, audience) => prevTotal + audience.count * audience.fee, 0);
+
+  const handlePrevMotion = () => router.back();
+
+  const handleRequestPay = async () => {
+    const seatParameter = storage.get('seatParameter');
+    const billParameter = storage.get('billParameter');
+
+    if (!seatParameter || !billParameter) {
+      router.replace('/');
+      return;
+    }
+
+    const merchant_uid = `mid_${new Date().getTime()}`;
+    const reqObj = {
+      merchantUid: merchant_uid,
+      scheduleNumber: seatParameter.scheduleNumber,
+      branchNumber: seatParameter.branchNumber,
+      playKindName: movieDetailInfo.playKindName,
+      branchName: movieDetailInfo.brchNm,
+      theabExpoName: movieDetailInfo.theabExpoNm,
+      playDeAndDow: movieDetailInfo.playDeAndDow,
+      playTime: movieDetailInfo.playTime,
+      audiences: billParameter.audiences,
+      selections: billParameter.selections,
+      amount: totalAmount,
+      paymentState: '결제 미완료',
+      movieName: movieDetailInfo.movieNm,
+      username: username
+    };
+
+    const paymentResp = await http.post('/payment', reqObj).catch(err => {
+      alert(`결제 실패: ${err.response.data.message}`);
+      return undefined;
+    });
+    if (!paymentResp) return;
+
+    const { IMP } = window;
+    IMP.init(process.env.NEXT_PUBLIC_MERCHANT);
+
+    const pgAndPayMethod = {
+      '신용/체크카드': ['bluewalnut', 'card'],
+      '휴대폰 결제': ['bluewalnut', 'phone'],
+      '카카오페이': ['kakaopay', 'card']
+    };
+    const [pg, payMethod] = pgAndPayMethod[checkedState];
+
+    const data = {
+      pg: pg,
+      pay_method: payMethod,
+      merchant_uid: merchant_uid,
+      name: `${movieDetailInfo.movieNm}/${movieDetailInfo.playKindName}`,
+      amount: totalAmount,
+      buyer_name: username
+    };
+
+    const callback = async rsp => {
+      if (rsp.success) {
+        await http.post('/payment/complete', { impUid: rsp.imp_uid, merchantUid: rsp.merchant_uid }).then(resp => {
+          switch (resp.data.status) {
+            case 'vbankIssued':
+              setTimeout(() => alert(resp.data.message), 100);
+              break;
+            case 'success':
+              setTimeout(() => alert(resp.data.message), 100);
+
+              storage.remove('seatParameter');
+              storage.remove('billParameter');
+              storage.remove('destination');
+
+              router.push(`/booking/complete?merchantUid=${merchant_uid}`);
+              break;
+          }
+        }).catch(err => setTimeout(() => alert(`결제 실패: ${err.response.data.message}`), 100));
+      } else {
+        setTimeout(() => alert(`결제 실패: ${rsp.error_msg}`), 100);
+      }
+    }
+
+    IMP.request_pay(data, callback);
+  }
 
   return (
     <>
@@ -292,19 +394,19 @@ const Bill = () => {
               <ul>
                 <li>
                   <label>
-                    <input type="radio" name="checkedState" value="신용/체크카드" checked={checkedState === '신용/체크카드'} />
+                    <input type="radio" name="checkedState" value="신용/체크카드" checked={checkedState === '신용/체크카드'} onChange={handleChange} />
                     신용/체크카드
                   </label>
                 </li>
                 <li>
                   <label>
-                    <input type="radio" name="checkedState" value="휴대폰 결제" checked={checkedState === '휴대폰 결제'} />
+                    <input type="radio" name="checkedState" value="휴대폰 결제" checked={checkedState === '휴대폰 결제'} onChange={handleChange} />
                     휴대폰 결제
                   </label>
                 </li>
                 <li>
                   <label>
-                    <input type="radio" name="checkedState" value="카카오페이" checked={checkedState === '카카오페이'} />
+                    <input type="radio" name="checkedState" value="카카오페이" checked={checkedState === '카카오페이'} onChange={handleChange} />
                     카카오페이
                   </label>
                 </li>
@@ -348,8 +450,8 @@ const Bill = () => {
               </div>
             </ResultWrapper>
             <ButtonWrapper>
-              <button>이전</button>
-              <button>결제</button>
+              <button onClick={handlePrevMotion}>이전</button>
+              <button onClick={handleRequestPay}>결제</button>
             </ButtonWrapper>
           </MovieInfoBox>
         </StyledWrapper>
