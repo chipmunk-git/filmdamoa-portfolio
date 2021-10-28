@@ -48,9 +48,7 @@ public class PaymentService {
 	
 	@Transactional
 	public void developPayment(PaymentDto paymentDto) {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		UserDetails userDetails = (UserDetails)authentication.getPrincipal();
-		String username = userDetails.getUsername();
+		String username = getUsername();
 		
 		if (!username.equals(paymentDto.getUsername())) throw new BusinessException("아이디가 일치하지 않습니다.");
 		if (paymentDto.getPaymentState() != PaymentState.INCOMPLETE_PAYMENT) throw new BusinessException("상태 값이 올바르지 않습니다.");
@@ -124,5 +122,30 @@ public class PaymentService {
 		}
 		
 		return responseMap;
+	}
+	
+	@Transactional
+	public PaymentDto readPayment(String merchantUid) {
+		String username = getUsername();
+		OffsetDateTime paymentDateTimeParam = OffsetDateTime.now().minusHours(1L);
+		Payment payment = null;
+		
+		if (!merchantUid.equals("none")) {
+			payment = paymentRepository.findByMerchantUidAndPaymentDateTimeAfterAndMemberUsername(merchantUid, paymentDateTimeParam, username)
+									   .orElseThrow(() -> new BusinessException("정보가 존재하지 않습니다."));
+		} else {
+			payment = paymentRepository.findTopByPaymentDateTimeAfterAndMemberUsernameOrderByPaymentDateTimeDesc(paymentDateTimeParam, username)
+									   .orElseThrow(() -> new BusinessException("정보가 존재하지 않습니다."));
+		}
+		
+		return paymentMapper.toDto(payment);
+	}
+	
+	private String getUsername() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		UserDetails userDetails = (UserDetails)authentication.getPrincipal();
+		String username = userDetails.getUsername();
+		
+		return username;
 	}
 }
