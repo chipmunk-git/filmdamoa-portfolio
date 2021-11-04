@@ -30,6 +30,7 @@ public class PaymentDto {
 	private OffsetDateTime refundDateTime;
 	private Long movieId;
 	private String movieName;
+	private String posterThumbnail;
 	private Long memberId;
 	private String username;
 	
@@ -37,7 +38,7 @@ public class PaymentDto {
 	private PaymentDto(Long id, String impUid, String merchantUid, String scheduleNumber, String branchNumber, String playKindName,
 					   String branchName, String theabExpoName, String playDeAndDow, String playTime, List<AudienceDto> audiences,
 					   List<SelectionDto> selections, Integer amount, PaymentState paymentState, OffsetDateTime paymentDateTime,
-					   OffsetDateTime refundDateTime, Long movieId, String movieName, Long memberId, String username) {
+					   OffsetDateTime refundDateTime, Long movieId, String movieName, String posterThumbnail, Long memberId, String username) {
 		this.id = id;
 		this.impUid = impUid;
 		this.merchantUid = merchantUid;
@@ -56,6 +57,7 @@ public class PaymentDto {
 		this.refundDateTime = refundDateTime;
 		this.movieId = movieId;
 		this.movieName = movieName;
+		this.posterThumbnail = posterThumbnail;
 		this.memberId = memberId;
 		this.username = username;
 	}

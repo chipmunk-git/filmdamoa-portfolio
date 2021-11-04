@@ -107,6 +107,7 @@ public class PaymentMapper {
 		paymentDto.refundDateTime(entity.getRefundDateTime());
 		paymentDto.movieId(entityMovieId(entity));
 		paymentDto.movieName(entityMovieMovieKoreanTitle(entity));
+		paymentDto.posterThumbnail(entityMoviePosterThumbnail(entity));
 		paymentDto.memberId(entityMemberId(entity));
 		paymentDto.username(entityMemberUsername(entity));
 		
@@ -192,6 +193,24 @@ public class PaymentMapper {
 		}
 		
 		return movieName;
+	}
+	
+	private String entityMoviePosterThumbnail(Payment payment) {
+		if (payment == null) {
+			return null;
+		}
+		
+		Movie movie = payment.getMovie();
+		if (movie == null) {
+			return null;
+		}
+		
+		String posterThumbnail = movie.getPosterThumbnail();
+		if (posterThumbnail == null) {
+			return null;
+		}
+		
+		return posterThumbnail;
 	}
 	
 	private Long entityMemberId(Payment payment) {
