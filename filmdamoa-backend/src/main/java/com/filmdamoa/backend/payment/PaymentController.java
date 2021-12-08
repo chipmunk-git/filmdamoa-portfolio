@@ -1,6 +1,8 @@
 package com.filmdamoa.backend.payment;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -21,6 +23,16 @@ public class PaymentController {
 	@Autowired
 	private PaymentService paymentService;
 	
+	@GetMapping
+	public ResponseEntity<Page<PaymentDto>> readPaymentAll(Pageable pageable) {
+		return ResponseEntity.ok().body(paymentService.readPaymentAll(pageable));
+	}
+	
+	@GetMapping("/{merchantUid}")
+	public ResponseEntity<PaymentDto> readPayment(@PathVariable String merchantUid) {
+		return ResponseEntity.ok().body(paymentService.readPayment(merchantUid));
+	}
+	
 	@PostMapping
 	public ResponseEntity<String> developPayment(@RequestBody PaymentDto paymentDto) {
 		paymentService.developPayment(paymentDto);
@@ -36,10 +48,5 @@ public class PaymentController {
 		}
 		
 		return ResponseEntity.ok().body(responseMap);
-	}
-	
-	@GetMapping("/{merchantUid}")
-	public ResponseEntity<PaymentDto> readPayment(@PathVariable String merchantUid) {
-		return ResponseEntity.ok().body(paymentService.readPayment(merchantUid));
 	}
 }

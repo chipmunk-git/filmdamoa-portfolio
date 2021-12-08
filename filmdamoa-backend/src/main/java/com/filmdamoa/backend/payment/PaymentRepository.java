@@ -1,5 +1,7 @@
 package com.filmdamoa.backend.payment;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -12,16 +14,19 @@ import java.util.Optional;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
-	@EntityGraph(attributePaths = "member")
-	Optional<Payment> findByPaymentStateAndMemberUsername(PaymentState paymentState, String username);
-	
-	Optional<Payment> findByMerchantUid(String merchantUid);
+	@EntityGraph(attributePaths = {"movie", "member"})
+	Page<Payment> findAllByPaymentStateAndMemberUsername(PaymentState paymentState, String username, Pageable pageable);
 	
 	@EntityGraph(attributePaths = {"audiences", "movie", "member"})
 	Optional<Payment> findByMerchantUidAndPaymentDateTimeAfterAndMemberUsername(String merchantUid, OffsetDateTime paymentDateTimeParam, String username);
 	
 	@EntityGraph(attributePaths = {"audiences", "movie", "member"})
 	Optional<Payment> findTopByPaymentDateTimeAfterAndMemberUsernameOrderByPaymentDateTimeDesc(OffsetDateTime paymentDateTimeParam, String username);
+	
+	@EntityGraph(attributePaths = "member")
+	Optional<Payment> findByPaymentStateAndMemberUsername(PaymentState paymentState, String username);
+	
+	Optional<Payment> findByMerchantUid(String merchantUid);
 	
 	@Modifying
 	@Query("UPDATE Payment p " +

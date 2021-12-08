@@ -6,6 +6,8 @@ import com.filmdamoa.backend.movie.MovieRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -44,6 +46,31 @@ public class PaymentService {
 	
 	public PaymentService(WebClient.Builder webClientBuilder) {
 		this.webClient = webClientBuilder.baseUrl("https://api.iamport.kr").build();
+	}
+	
+	@Transactional
+	public Page<PaymentDto> readPaymentAll(Pageable pageable) {
+		String username = getUsername();
+		Page<Payment> payments = paymentRepository.findAllByPaymentStateAndMemberUsername(PaymentState.COMPLETE_PAYMENT, username, pageable);
+		
+		return payments.map(payment -> paymentMapper.toDto(payment));
+	}
+	
+	@Transactional
+	public PaymentDto readPayment(String merchantUid) {
+		String username = getUsername();
+		OffsetDateTime paymentDateTimeParam = OffsetDateTime.now().minusHours(1L);
+		Payment payment = null;
+		
+		if (!merchantUid.equals("none")) {
+			payment = paymentRepository.findByMerchantUidAndPaymentDateTimeAfterAndMemberUsername(merchantUid, paymentDateTimeParam, username)
+									   .orElseThrow(() -> new BusinessException("정보가 존재하지 않습니다."));
+		} else {
+			payment = paymentRepository.findTopByPaymentDateTimeAfterAndMemberUsernameOrderByPaymentDateTimeDesc(paymentDateTimeParam, username)
+									   .orElseThrow(() -> new BusinessException("정보가 존재하지 않습니다."));
+		}
+		
+		return paymentMapper.toDto(payment);
 	}
 	
 	@Transactional
@@ -122,23 +149,6 @@ public class PaymentService {
 		}
 		
 		return responseMap;
-	}
-	
-	@Transactional
-	public PaymentDto readPayment(String merchantUid) {
-		String username = getUsername();
-		OffsetDateTime paymentDateTimeParam = OffsetDateTime.now().minusHours(1L);
-		Payment payment = null;
-		
-		if (!merchantUid.equals("none")) {
-			payment = paymentRepository.findByMerchantUidAndPaymentDateTimeAfterAndMemberUsername(merchantUid, paymentDateTimeParam, username)
-									   .orElseThrow(() -> new BusinessException("정보가 존재하지 않습니다."));
-		} else {
-			payment = paymentRepository.findTopByPaymentDateTimeAfterAndMemberUsernameOrderByPaymentDateTimeDesc(paymentDateTimeParam, username)
-									   .orElseThrow(() -> new BusinessException("정보가 존재하지 않습니다."));
-		}
-		
-		return paymentMapper.toDto(payment);
 	}
 	
 	private String getUsername() {
