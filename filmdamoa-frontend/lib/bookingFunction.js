@@ -1,5 +1,5 @@
 export const numberReader = number => {
-  return number < 10 ? "0" + number : number;
+  return number < 10 ? '0' + number : number;
 }
 
 export const createParsedDates = movieFormDateList => {
@@ -102,4 +102,16 @@ export const parseSeatDatas = seatData => {
   seatData.seatListSD05.forEach(element => parsedSeats[element.rowNo][element.colNo] = element);
 
   return { parsedRowList: parsedRows, parsedSeatList: parsedSeats };
+}
+
+export const parsePaymentDateTime = paymentDateTime => {
+  const returnedDate = new Date(paymentDateTime);
+
+  const year = returnedDate.getFullYear();
+  const month = numberReader(returnedDate.getMonth() + 1);
+  const date = numberReader(returnedDate.getDate());
+  const hour = numberReader(returnedDate.getHours());
+  const minute = numberReader(returnedDate.getMinutes());
+
+  return `${year}.${month}.${date} (${hour}:${minute})`;
 }
