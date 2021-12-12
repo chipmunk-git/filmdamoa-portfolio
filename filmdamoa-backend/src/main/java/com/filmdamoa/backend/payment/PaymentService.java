@@ -63,7 +63,7 @@ public class PaymentService {
 		Payment payment = null;
 		
 		if (!merchantUid.equals("none")) {
-			payment = paymentRepository.findByMerchantUidAndPaymentDateTimeAfterAndMemberUsername(merchantUid, paymentDateTimeParam, username)
+			payment = paymentRepository.findByMerchantUidAndMemberUsername(merchantUid, username)
 									   .orElseThrow(() -> new BusinessException("정보가 존재하지 않습니다."));
 		} else {
 			payment = paymentRepository.findTopByPaymentDateTimeAfterAndMemberUsernameOrderByPaymentDateTimeDesc(paymentDateTimeParam, username)

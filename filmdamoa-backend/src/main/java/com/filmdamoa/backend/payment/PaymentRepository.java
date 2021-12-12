@@ -18,7 +18,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 	Page<Payment> findAllByPaymentStateAndMemberUsername(PaymentState paymentState, String username, Pageable pageable);
 	
 	@EntityGraph(attributePaths = {"audiences", "movie", "member"})
-	Optional<Payment> findByMerchantUidAndPaymentDateTimeAfterAndMemberUsername(String merchantUid, OffsetDateTime paymentDateTimeParam, String username);
+	Optional<Payment> findByMerchantUidAndMemberUsername(String merchantUid, String username);
 	
 	@EntityGraph(attributePaths = {"audiences", "movie", "member"})
 	Optional<Payment> findTopByPaymentDateTimeAfterAndMemberUsernameOrderByPaymentDateTimeDesc(OffsetDateTime paymentDateTimeParam, String username);

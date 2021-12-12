@@ -264,7 +264,7 @@ const Complete = ({ data }) => {
   );
 }
 
-export const getServerSideProps = wrapper.getServerSideProps(async ({ req, res, query, store }) => {
+export const getServerSideProps = wrapper.getServerSideProps(async ({ req, res, store }) => {
   const accessToken = cookie.parse(req.headers.cookie || '').accessToken;
 
   if (accessToken) {
@@ -278,8 +278,7 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ req, res, 
     };
   }
 
-  const merchantUid = query.merchantUid || 'none';
-  const resp = await getDataInNodeJs(`/payment/${merchantUid}`, accessToken, req, res, store);
+  const resp = await getDataInNodeJs('/payment/none', accessToken, req, res, store);
 
   if (!resp) {
     return {

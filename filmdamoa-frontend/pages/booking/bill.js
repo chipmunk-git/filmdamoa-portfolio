@@ -368,7 +368,7 @@ const Bill = () => {
               storage.remove('billParameter');
               storage.remove('destination');
 
-              router.push(`/booking/complete?merchantUid=${merchant_uid}`);
+              router.push('/booking/complete');
               break;
           }
         }).catch(err => setTimeout(() => alert(`결제 실패: ${err.response.data.message}`), 100));
