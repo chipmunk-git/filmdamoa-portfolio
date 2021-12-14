@@ -4,6 +4,8 @@ import com.filmdamoa.backend.auth.Member;
 import com.filmdamoa.backend.auth.MemberRepository;
 import com.filmdamoa.backend.common.TupleState;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,7 +17,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class MovieService {
@@ -32,25 +33,27 @@ public class MovieService {
 	private MovieMapper movieMapper;
 	
 	@Transactional
-	public List<MovieDto> readMovieAll() {
-		List<Movie> movies = movieRepository.findDistinctTop4ByOrderByDailyBoxOfficeAsc();
+	public Page<MovieDto> readMovieAll(Pageable pageable) {
+		Page<Movie> movies = movieRepository.findAll(pageable);
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		
 		if (authentication instanceof UsernamePasswordAuthenticationToken) {
 			UserDetails userDetails = (UserDetails)authentication.getPrincipal();
 			String username = userDetails.getUsername();
-			List<MovieMember> movieMembers = movieMemberRepository.findAllMovieLikeTrue(username, movies);
+			List<MovieMember> movieMembers = movieMemberRepository.findAllMovieLikeTrue(username, movies.getContent());
 			
 			Set<Long> movieIds = new HashSet<>();
 			for (MovieMember mm : movieMembers) {
 				movieIds.add(mm.getMovie().getId());
 			}
 			
-			return movies.stream().map(movie ->
+			return movies.map(movie ->
 					   movieMapper.toDto(movie, MovieDto.MappingCondition.EXCEPT_MOVIE_GENRE, movieIds.contains(movie.getId()))
-				   ).collect(Collectors.toList());
+				   );
 		} else {
-			return movieMapper.toDtos(movies, MovieDto.MappingCondition.EXCEPT_MOVIE_GENRE, false);
+			return movies.map(movie ->
+					   movieMapper.toDto(movie, MovieDto.MappingCondition.EXCEPT_MOVIE_GENRE, false)
+				   );
 		}
 	}
 	

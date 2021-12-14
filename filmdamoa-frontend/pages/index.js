@@ -254,7 +254,7 @@ const Index = ({ data }) => {
     username: state.user.username
   }));
 
-  const [movies, setMovies] = useState(data);
+  const [movies, setMovies] = useState(data.content);
   const handleToggle = async id => {
     if (!username) return;
 
@@ -277,7 +277,7 @@ const Index = ({ data }) => {
     <li key={movie.id}>
       <Link href={`/movie/${movie.id}`}>
         <a title="영화상세 보기">
-          <span>{movie.dailyBoxOffice}</span>
+          {/* <span>{movie.dailyBoxOffice}</span> */}
           <img src={movie.posterThumbnail} alt={movie.movieKoreanTitle} />
           <MovieInfoWrapper>
             <SynopsisBox>
@@ -338,9 +338,9 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ req, res, 
 
   if (accessToken) {
     store.dispatch(setAccessToken(accessToken));
-    resp = await getDataInNodeJs('/movie', accessToken, req, res, store);
+    resp = await getDataInNodeJs('/movie?page=0&size=4&sort=movieReleaseDate,desc', accessToken, req, res, store);
   } else {
-    resp = await httpInNodeJs.get('/movie');
+    resp = await httpInNodeJs.get('/movie?page=0&size=4&sort=movieReleaseDate,desc');
   }
   const data = resp.data;
 

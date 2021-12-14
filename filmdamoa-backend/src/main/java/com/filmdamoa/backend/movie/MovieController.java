@@ -1,6 +1,8 @@
 package com.filmdamoa.backend.movie;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true", maxAge = 3600)
@@ -21,8 +22,8 @@ public class MovieController {
 	private MovieService movieService;
 	
 	@GetMapping
-	public ResponseEntity<List<MovieDto>> readMovieAll() {
-		return ResponseEntity.ok().body(movieService.readMovieAll());
+	public ResponseEntity<Page<MovieDto>> readMovieAll(Pageable pageable) {
+		return ResponseEntity.ok().body(movieService.readMovieAll(pageable));
 	}
 	
 	@PostMapping("/{id}/like")
