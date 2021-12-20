@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import styled from 'styled-components';
@@ -6,15 +6,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as cookie from 'cookie';
 import { decode } from 'html-entities';
 import { useSelector } from 'react-redux';
+import Pagination from 'react-js-pagination';
+import debounce from 'lodash/debounce';
 import { http, httpInNodeJs, getDataInNodeJs } from '../lib/http';
 import { StyledArticle } from '../lib/styledComponents';
 import { withLayout } from '../components';
 import { wrapper } from '../store/store';
 import { setAccessToken } from '../store/user/action';
 
-const BoxOfficeWrapper = styled.div`
+const MovieListWrapper = styled.div`
   width: 100%;
-  height: 35rem;
   padding: 0 calc(50vw - 37.5rem);
   background-color: ${({ theme }) => theme.colors.black};
   position: absolute;
@@ -22,87 +23,28 @@ const BoxOfficeWrapper = styled.div`
   left: 0;
 
   @media ${({ theme }) => theme.media.desktop} {
-    height: 64rem;
     padding: 0 3.625rem;
   }
 
   @media ${({ theme }) => theme.media.tablet} {
-    height: 119rem;
     padding: 0 2rem;
   }
 
   @media ${({ theme }) => theme.media.mobile} {
-    height: 120rem;
     padding: 0 0.375rem;
   }
 `
 
-const BoxOfficeTitle = styled.div`
+const MovieList = styled.ul`
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  width: 100%;
-  margin: 1.5rem 0;
-
-  h1 {
-    padding: 0 0 0.375rem;
-    margin: 0;
-    font-size: ${({ theme }) => theme.fontSize.regular};
-    color: white;
-    border-bottom: 2px solid ${({ theme }) => theme.colors.greyDark};
-  }
-
-  @media ${({ theme }) => theme.media.mobile} {
-    flex-wrap: wrap;
-    justify-content: center;
-    margin: 0.625rem 0;
-  }
-`
-
-const MoreMovieWrapper = styled.div`
-  width: 8.875rem;
-
-  a {
-    padding: 0 0.5rem;
-    text-decoration: none;
-    cursor: pointer;
-    font-size: ${({ theme }) => theme.fontSize.medium};
-    color: ${({ theme }) => theme.colors.greyLight};
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-
-  @media ${({ theme }) => theme.media.mobile} {
-    display: flex;
-    justify-content: flex-end;
-    width: 100%;
-    margin-top: 1rem;
-  }
-`
-
-const MoreMovieFaker = styled(MoreMovieWrapper)`
-  @media ${({ theme }) => theme.media.mobile} {
-    display: none;
-  }
-`
-
-const StyledPlus = styled(FontAwesomeIcon)`
-  font-size: ${({ theme }) => theme.fontSize.medium} !important;
-  color: ${({ theme }) => theme.colors.greyLight};
-`
-
-const BoxOfficeBody = styled.ul`
-  display: flex;
-  justify-content: center;
   flex-wrap: wrap;
+  max-width: 72rem;
   padding: 0;
-  margin: 0 auto;
+  margin: 0.25rem auto;
   list-style: none;
 
   li {
-    margin: 0 1.25rem;
+    margin: 1.25rem;
     position: relative;
 
     @media ${({ theme }) => theme.media.desktop} {
@@ -116,20 +58,12 @@ const BoxOfficeBody = styled.ul`
 
   a {
     display: block;
+    width: 15.5rem;
+    text-align: center;
     text-decoration: none;
     cursor: pointer;
     font-size: ${({ theme }) => theme.fontSize.medium};
     color: white;
-
-    > span:first-child {
-      padding: 1rem;
-      position: absolute;
-      top: 0;
-      font-size: 2rem;
-      font-style: italic;
-      font-weight: 300;
-      text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.8);
-    }
   }
 
   img {
@@ -145,11 +79,15 @@ const BoxOfficeBody = styled.ul`
   }
 
   @media ${({ theme }) => theme.media.desktop} {
-    max-width: 48rem;
+    max-width: 52.5rem;
+  }
+
+  @media ${({ theme }) => theme.media.laptop} {
+    max-width: 35rem;
   }
 
   @media ${({ theme }) => theme.media.tablet} {
-    max-width: 32rem;
+    max-width: 17.5rem;
   }
 `
 
@@ -175,6 +113,7 @@ const SynopsisBox = styled.span`
   display: block;
   height: 9.5rem;
   overflow: hidden;
+  text-align: left;
 `
 
 const ScoreBox = styled.span`
@@ -234,29 +173,125 @@ const StyledHeart = styled(FontAwesomeIcon)`
   color: ${({ theme, active }) => active ? theme.colors.freshRed : 'white'};
 `
 
-const BoxOfficeFaker = styled.div`
+const MovieListFaker = styled.div`
   width: 100%;
-  height: calc(35rem - 3.625rem);
-
-  @media ${({ theme }) => theme.media.desktop} {
-    height: calc(64rem - 3.625rem);
-  }
+  height: calc(${({ wrapperHeight }) => wrapperHeight}px - 3.625rem);
 
   @media ${({ theme }) => theme.media.tablet} {
-    height: calc(119rem - 2rem);
+    height: calc(${({ wrapperHeight }) => wrapperHeight}px - 2rem);
   }
 
   @media ${({ theme }) => theme.media.mobile} {
-    height: calc(120rem - 0.375rem);
+    height: calc(${({ wrapperHeight }) => wrapperHeight}px - 0.375rem);
   }
 `
 
-const Index = ({ data }) => {
+const MovieListPaginator = styled.div`
+  text-align: center;
+
+  .pagination {
+    display: inline-block;
+    padding-left: 0;
+    margin: 1.25rem 0;
+    border-radius: 0.25rem;
+
+    > li {
+      display: inline;
+
+      > a, > span {
+        padding: 0.375rem 0.75rem;
+        margin-left: -1px;
+        line-height: 1.375rem;
+        text-decoration: none;
+        color: #337ab7;
+        background-color: white;
+        border: 1px solid #dedede;
+        float: left;
+        position: relative;
+
+        &:focus, &:hover {
+          color: #23527c;
+          background-color: ${({ theme }) => theme.colors.trackBg};
+          border-color: #dedede;
+          z-index: 2;
+        }
+      }
+
+      &:first-child {
+        > a, > span {
+          margin-left: 0;
+          border-top-left-radius: 0.25rem;
+          border-bottom-left-radius: 0.25rem;
+        }
+      }
+
+      &:last-child {
+        > a, > span {
+          border-top-right-radius: 0.25rem;
+          border-bottom-right-radius: 0.25rem;
+        }
+      }
+    }
+
+    > .active {
+      > a, > a:focus, > a:hover, > span, > span:focus, > span:hover {
+        cursor: default;
+        color: white;
+        background-color: #337ab7;
+        border-color: #337ab7;
+        z-index: 3;
+      }
+    }
+
+    > .disabled {
+      > a, > a:focus, > a:hover, > span, > span:focus, > span:hover {
+        cursor: not-allowed;
+        color: #767676;
+        background-color: white;
+        border-color: #dedede;
+      }
+    }
+  }
+`
+
+const Movie = ({ data }) => {
   const { username } = useSelector(state => ({
     username: state.user.username
   }));
 
   const [movies, setMovies] = useState(data.content);
+  const [height, setHeight] = useState(58);
+  const [activePage, setActivePage] = useState(1);
+
+  const initialRender = useRef(true);
+  useEffect(async () => {
+    if (initialRender.current) {
+      initialRender.current = false;
+    } else {
+      await http.get(`/movie?page=${activePage - 1}&size=12&sort=movieReleaseDate,desc&sort=movieKoreanTitle,asc`).then(resp => {
+        setMovies(resp.data.content);
+      }).catch(err => alert(err.response.data.message));
+    }
+  }, [activePage]);
+
+  const wrapperRef = useRef();
+  const handleHeight = () => {
+    if (height !== wrapperRef.current.getBoundingClientRect().height) setHeight(wrapperRef.current.getBoundingClientRect().height);
+  }
+
+  useEffect(() => {
+    const handleResize = debounce(handleHeight, 100);
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    }
+  }, [height]);
+
+  useEffect(() => {
+    setTimeout(handleHeight, 100);
+  }, [movies]);
+
   const handleToggle = async id => {
     if (!username) return;
 
@@ -275,11 +310,12 @@ const Index = ({ data }) => {
     .catch(err => console.log(err));
   }
 
+  const handlePageChange = pageNumber => setActivePage(pageNumber);
+
   const movieItems = movies.map(movie =>
     <li key={movie.id}>
       <Link href={`/movie/${movie.id}`}>
         <a title="영화상세 보기">
-          {/* <span>{movie.dailyBoxOffice}</span> */}
           <img src={movie.posterThumbnail} alt={movie.movieKoreanTitle} />
           <MovieInfoWrapper>
             <SynopsisBox>
@@ -310,25 +346,18 @@ const Index = ({ data }) => {
   return (
     <>
       <Head>
-        <title>FILMDAMOA - 메인 페이지</title>
-        <meta name="description" content="개봉 영화에 대한 모든 정보는 'FILMDAMOA'에서 얻으세요!" />
+        <title>FILMDAMOA - 영화</title>
+        <meta name="description" content="영화 목록 페이지입니다." />
       </Head>
       <StyledArticle>
-        <BoxOfficeWrapper>
-          <BoxOfficeTitle>
-            <MoreMovieFaker />
-            {/* <h1>박스오피스</h1> */}
-            <MoreMovieWrapper>
-              <Link href="/movie">
-                <a>더 많은 영화보기 <StyledPlus icon={["fas", "plus"]} /></a>
-              </Link>
-            </MoreMovieWrapper>
-          </BoxOfficeTitle>
-          <BoxOfficeBody>
-            {movieItems}
-          </BoxOfficeBody>
-        </BoxOfficeWrapper>
-        <BoxOfficeFaker />
+        <MovieListWrapper ref={wrapperRef}>
+          <MovieList>{movieItems}</MovieList>
+        </MovieListWrapper>
+        <MovieListFaker wrapperHeight={height} />
+        <MovieListPaginator>
+          <Pagination activePage={activePage} itemsCountPerPage={data.size}
+            totalItemsCount={data.totalElements} pageRangeDisplayed={5} onChange={handlePageChange} />
+        </MovieListPaginator>
       </StyledArticle>
     </>
   );
@@ -340,9 +369,9 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ req, res, 
 
   if (accessToken) {
     store.dispatch(setAccessToken(accessToken));
-    resp = await getDataInNodeJs('/movie?page=0&size=4&sort=movieReleaseDate,desc&sort=movieKoreanTitle,asc', accessToken, req, res, store);
+    resp = await getDataInNodeJs('/movie?page=0&size=12&sort=movieReleaseDate,desc&sort=movieKoreanTitle,asc', accessToken, req, res, store);
   } else {
-    resp = await httpInNodeJs.get('/movie?page=0&size=4&sort=movieReleaseDate,desc&sort=movieKoreanTitle,asc');
+    resp = await httpInNodeJs.get('/movie?page=0&size=12&sort=movieReleaseDate,desc&sort=movieKoreanTitle,asc');
   }
   const data = resp.data;
 
@@ -351,4 +380,4 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ req, res, 
   };
 });
 
-export default withLayout(Index);
+export default withLayout(Movie);
