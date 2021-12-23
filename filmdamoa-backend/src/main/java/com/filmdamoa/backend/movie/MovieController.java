@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true", maxAge = 3600)
+@CrossOrigin(origins = "${spring.cors.origins}", allowCredentials = "true", maxAge = 3600)
 @RestController
 @RequestMapping("/movie")
 public class MovieController {
