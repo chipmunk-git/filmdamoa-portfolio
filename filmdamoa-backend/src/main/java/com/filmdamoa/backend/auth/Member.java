@@ -39,7 +39,7 @@ public class Member {
 	@Column(unique = true, nullable = false)
 	private String email;
 	
-	private String role;
+	private String role; // 계정 권한
 	
 	@Column(nullable = false)
 	private TupleState tupleState;

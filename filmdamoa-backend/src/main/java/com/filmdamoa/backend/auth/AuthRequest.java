@@ -16,11 +16,13 @@ import lombok.NoArgsConstructor;
 public class AuthRequest implements Serializable {
 	private static final long serialVersionUID = 8553434066927825097L;
 	
+	// '4~30자의 영문 소문자 및 숫자' 여부를 판별하는 정규 표현식
 	@Pattern(regexp = "^([a-z0-9]){4,30}$",
 			 message = "아이디는 4~30자의 영문 소문자 및 숫자로 이뤄져야 합니다.",
 			 groups = {Default.class, Login.class})
 	private String username;
 	
+	// '8자 이상의 영문 소문자, 숫자, (", &, ', /, <, > 6가지를 제외한) 특수문자' 여부를 판별하는 정규 표현식
 	@Pattern(regexp = "^(?=.*[a-z])(?=.*[0-9])(?=.*[\\!#-%\\(-\\.:;\\=\\?@\\[-`\\{-~])[a-z0-9\\!#-%\\(-\\.:;\\=\\?@\\[-`\\{-~]{8,}$",
 			 message = "비밀번호는 8자 이상의 영문 소문자, 숫자, 특수문자로 이뤄져야 합니다.",
 			 groups = {Default.class, Login.class})

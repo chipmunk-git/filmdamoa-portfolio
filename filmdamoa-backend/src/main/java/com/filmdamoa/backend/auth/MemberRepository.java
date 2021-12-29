@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
-	Optional<Member> findByUsername(String username);
-	Optional<Member> findByEmail(String email);
-	List<Member> findByUsernameOrEmail(String username, String email);
+	Optional<Member> findByUsername(String username); // 아이디를 기준으로 조회
+	Optional<Member> findByEmail(String email); // 이메일을 기준으로 조회
+	List<Member> findByUsernameOrEmail(String username, String email); // 아이디 또는 이메일을 기준으로 조회
 }
