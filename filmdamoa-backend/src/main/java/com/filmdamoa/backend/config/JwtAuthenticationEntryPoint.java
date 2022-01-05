@@ -14,7 +14,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint, Serializable {
 	private static final long serialVersionUID = -4054553992840948785L;
-
+	
+	// 인증 예외가 발생했을 때, 해당 클래스의 commence 메소드가 실행됨
 	@Override
 	public void commence(HttpServletRequest request,
 						 HttpServletResponse response,

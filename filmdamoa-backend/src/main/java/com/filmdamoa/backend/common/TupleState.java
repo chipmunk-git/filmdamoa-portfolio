@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum TupleState {
+	// 튜플의 상태를 설정하는 Enum
 	PUBLIC_TUPLE("공개"),
 	PRIVATE_TUPLE("비공개"),
 	DELETED_TUPLE("삭제됨"),
