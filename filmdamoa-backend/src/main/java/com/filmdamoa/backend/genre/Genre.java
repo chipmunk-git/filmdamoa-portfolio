@@ -26,7 +26,7 @@ public class Genre {
 	private Long id;
 	
 	@Column(unique = true, nullable = false)
-	private String type;
+	private String type; // 장르의 유형
 	
 	@Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false)
 	@CreationTimestamp
