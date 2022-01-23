@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MovieRepository extends JpaRepository<Movie, Long> {
-	Page<Movie> findAll(Pageable pageable);
-	Optional<Movie> findByMovieKoreanTitle(String movieKoreanTitle);
+	Page<Movie> findAll(Pageable pageable); // 페이징 조건을 기준으로 조회
+	Optional<Movie> findByMovieKoreanTitle(String movieKoreanTitle); // 영화의 한글 제목을 기준으로 조회
 }

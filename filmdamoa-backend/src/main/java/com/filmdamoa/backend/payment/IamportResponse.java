@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class IamportResponse<T> {
 	private int code;
 	private String message;
-	private T response;
+	private T response; // 응답에 알맞은 객체 할당
 	
 	@Builder
 	private IamportResponse(int code, String message, T response) {

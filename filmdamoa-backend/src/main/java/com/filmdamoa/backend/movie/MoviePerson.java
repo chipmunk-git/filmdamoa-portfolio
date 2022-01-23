@@ -39,11 +39,11 @@ public class MoviePerson {
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="movie_id")
-	private Movie movie;
+	private Movie movie; // movie와 person은 N:M 관계
 	
 	@ManyToOne
 	@JoinColumn(name="person_id")
-	private Person person;
+	private Person person; // movie와 person은 N:M 관계
 	
 	@Builder
 	private MoviePerson(Long id, Position position, OffsetDateTime createDateTime, Movie movie, Person person) {

@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum MovieRating {
+	// 영화의 관람 등급을 설정하는 Enum
 	ALL_AUDIENCE("전체관람가"),
 	TWELVE_AUDIENCE("12세 이상 관람가"),
 	FIFTEEN_AUDIENCE("15세 이상 관람가"),

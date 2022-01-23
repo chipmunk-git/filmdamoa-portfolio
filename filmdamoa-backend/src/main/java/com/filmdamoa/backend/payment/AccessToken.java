@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AccessToken {
 	@JsonProperty("access_token")
-	private String token;
+	private String token; // 아임포트 액세스 토큰
 	
 	@JsonProperty("expired_at")
 	private int expiredAt;
@@ -29,10 +29,10 @@ public class AccessToken {
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
 	public static class AuthData {
 		@JsonProperty("imp_key")
-		private String apiKey;
+		private String apiKey; // REST API Key
 		
 		@JsonProperty("imp_secret")
-		private String apiSecret;
+		private String apiSecret; // REST API Secret
 		
 		@Builder
 		private AuthData(String apiKey, String apiSecret) {

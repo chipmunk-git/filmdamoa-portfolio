@@ -31,9 +31,9 @@ public class MovieMember {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	private Boolean movieLike;
+	private Boolean movieLike; // 좋아요 여부
 	
-	private Short audienceScore;
+	private Short audienceScore; // 평점
 	
 	private String movieReview;
 	
@@ -46,11 +46,11 @@ public class MovieMember {
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="movie_id")
-	private Movie movie;
+	private Movie movie; // movie와 member는 N:M 관계
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="member_id")
-	private Member member;
+	private Member member; // movie와 member는 N:M 관계
 	
 	@Builder
 	private MovieMember(Long id, Boolean movieLike, Short audienceScore, String movieReview,

@@ -28,11 +28,11 @@ public class PaymentDto {
 	private PaymentState paymentState;
 	private OffsetDateTime paymentDateTime;
 	private OffsetDateTime refundDateTime;
-	private Long movieId;
-	private String movieName;
-	private String posterThumbnail;
-	private Long memberId;
-	private String username;
+	private Long movieId; // movie의 기본 키
+	private String movieName; // 영화의 한글 제목
+	private String posterThumbnail; // 포스터 이미지 경로
+	private Long memberId; // member의 기본 키
+	private String username; // 로그인한 유저의 아이디
 	
 	@Builder
 	private PaymentDto(Long id, String impUid, String merchantUid, String scheduleNumber, String branchNumber, String playKindName,

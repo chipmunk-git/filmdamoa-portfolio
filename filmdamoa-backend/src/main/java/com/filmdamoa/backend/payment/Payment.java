@@ -35,44 +35,44 @@ public class Payment {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	private String impUid;
+	private String impUid; // 아임포트 결제 번호
 	
 	@Column(nullable = false)
-	private String merchantUid;
+	private String merchantUid; // 예매 번호
 	
 	@Column(nullable = false)
-	private String scheduleNumber;
+	private String scheduleNumber; // 영화 스케줄 번호
 	
 	@Column(nullable = false)
-	private String branchNumber;
+	private String branchNumber; // 극장 지점 번호
 	
 	@Column(nullable = false)
-	private String playKindName;
+	private String playKindName; // 상영 유형
 	
 	@Column(nullable = false)
 	private String branchName;
 	
 	@Column(nullable = false)
-	private String theabExpoName;
+	private String theabExpoName; // 상영관 이름
 	
 	@Column(nullable = false)
-	private String playDeAndDow;
+	private String playDeAndDow; // 상영일
 	
 	@Column(nullable = false)
-	private String playTime;
+	private String playTime; // 상영 시간
 	
 	@ElementCollection(fetch = FetchType.LAZY)
 	@CollectionTable(name = "audience", joinColumns = @JoinColumn(name = "payment_id"))
 	@OrderColumn
-	private List<Audience> audiences = new ArrayList<>();
+	private List<Audience> audiences = new ArrayList<>(); // payment와 audience는 1:N 관계
 	
 	@ElementCollection(fetch = FetchType.LAZY)
 	@CollectionTable(name = "selection", joinColumns = @JoinColumn(name = "payment_id"))
 	@OrderColumn
-	private List<Selection> selections = new ArrayList<>();
+	private List<Selection> selections = new ArrayList<>(); // payment와 selection은 1:N 관계
 	
 	@Column(nullable = false)
-	private Integer amount;
+	private Integer amount; // 결제 금액
 	
 	@Column(nullable = false)
 	private PaymentState paymentState;
@@ -86,11 +86,11 @@ public class Payment {
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="movie_id")
-	private Movie movie;
+	private Movie movie; // movie와 member는 N:M 관계
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="member_id")
-	private Member member;
+	private Member member; // movie와 member는 N:M 관계
 	
 	@Builder
 	private Payment(Long id, String impUid, String merchantUid, String scheduleNumber, String branchNumber,
@@ -117,6 +117,7 @@ public class Payment {
 		this.member = member;
 	}
 	
+	// JPA의 변경 감지(Dirty Checking)에 이용되는 change 메소드
 	public void change(Payment newPayment) {
 		this.id = newPayment.getId();
 		this.impUid = newPayment.getImpUid();
@@ -143,7 +144,7 @@ public class Payment {
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
 	public static class Audience {
 		@Column(nullable = false)
-		private String category;
+		private String category; // 관람객 유형
 		
 		@Column(nullable = false)
 		private Short count;
@@ -163,7 +164,7 @@ public class Payment {
 		private String seatName;
 		
 		@Column(nullable = false)
-		private String seatUniqueNumber;
+		private String seatUniqueNumber; // 좌석 고유 번호
 		
 		@Builder
 		private Selection(String seatName, String seatUniqueNumber) {

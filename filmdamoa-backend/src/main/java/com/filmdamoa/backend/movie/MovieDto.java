@@ -24,12 +24,12 @@ public class MovieDto {
 	private TupleState tupleState;
 	private Short dailyBoxOffice;
 	private String movieNumber;
-	private Integer movieLikes;
-	private Float audienceScore;
-	private Boolean movieLike;
-	private String movieDirector;
-	private String movieStar;
-	private String movieGenre;
+	private Integer movieLikes; // 좋아요 개수
+	private Float audienceScore; // 평점의 평균
+	private Boolean movieLike; // 로그인한 유저의 좋아요 여부
+	private String movieDirector; // 감독
+	private String movieStar; // 배우
+	private String movieGenre; // 장르의 유형
 	
 	@Builder
 	private MovieDto(Long id, String movieKoreanTitle, String movieEnglishTitle, Boolean screeningState,
@@ -59,6 +59,6 @@ public class MovieDto {
 	}
 	
 	public static enum MappingCondition {
-		ALL, EXCEPT_MOVIE_GENRE
+		ALL, EXCEPT_MOVIE_GENRE // Mapping Condition을 구별하는 Enum
 	}
 }

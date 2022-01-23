@@ -17,18 +17,18 @@ public class PaymentMapper {
 		return toEntityEssence(dto, null, null, null, null);
 	}
 	
-	public Payment toEntity(PaymentDto dto, Long id, OffsetDateTime paymentDateTime, Long movieId, Long memberId) {
-		return toEntityEssence(dto, id, paymentDateTime, movieId, memberId);
+	public Payment toEntity(PaymentDto dto, Long id, OffsetDateTime paymentDateTime, Movie movie, Member member) {
+		return toEntityEssence(dto, id, paymentDateTime, movie, member);
 	}
 	
-	private Payment toEntityEssence(PaymentDto dto, Long id, OffsetDateTime paymentDateTime, Long movieId, Long memberId) {
+	private Payment toEntityEssence(PaymentDto dto, Long id, OffsetDateTime paymentDateTime, Movie movie, Member member) {
 		if (dto == null) {
 			return null;
 		}
 		
 		PaymentBuilder payment = Payment.builder();
 		
-		payment.id(id == null ? dto.getId() : id);
+		payment.id(id == null ? dto.getId() : id); // id의 null 여부에 따라 적합한 값을 할당
 		payment.impUid(dto.getImpUid());
 		payment.merchantUid(dto.getMerchantUid());
 		payment.scheduleNumber(dto.getScheduleNumber());
@@ -42,10 +42,10 @@ public class PaymentMapper {
 		payment.selections(dtoSelectionsToEntity(dto.getSelections()));
 		payment.amount(dto.getAmount());
 		payment.paymentState(dto.getPaymentState());
-		payment.paymentDateTime(paymentDateTime == null ? dto.getPaymentDateTime() : paymentDateTime);
+		payment.paymentDateTime(paymentDateTime == null ? dto.getPaymentDateTime() : paymentDateTime); // paymentDateTime의 null 여부에 따라 적합한 값을 할당
 		payment.refundDateTime(dto.getRefundDateTime());
-		payment.movie(Movie.builder().id(movieId == null ? dto.getMovieId() : movieId).build());
-		payment.member(Member.builder().id(memberId == null ? dto.getMemberId() : memberId).build());
+		payment.movie(movie == null ? Movie.builder().id(dto.getMovieId()).build() : movie); // movie의 null 여부에 따라 적합한 값을 할당
+		payment.member(member == null ? Member.builder().id(dto.getMemberId()).build() : member); // member의 null 여부에 따라 적합한 값을 할당
 		
 		return payment.build();
 	}
@@ -57,6 +57,7 @@ public class PaymentMapper {
 		
 		List<Payment.Audience> list = new ArrayList<Payment.Audience>(audiences.size());
 		for (PaymentDto.AudienceDto audience : audiences) {
+			// AudienceDto 객체의 값들을 이용하여 Audience 객체를 만든 후 list에 추가
 			list.add(Payment.Audience.builder()
 					.category(audience.getCategory())
 					.count(audience.getCount())
@@ -73,6 +74,7 @@ public class PaymentMapper {
 		
 		List<Payment.Selection> list = new ArrayList<Payment.Selection>(selections.size());
 		for (PaymentDto.SelectionDto selection : selections) {
+			// SelectionDto 객체의 값들을 이용하여 Selection 객체를 만든 후 list에 추가
 			list.add(Payment.Selection.builder()
 					.seatName(selection.getSeatName())
 					.seatUniqueNumber(selection.getSeatUniqueNumber())
@@ -105,11 +107,11 @@ public class PaymentMapper {
 		paymentDto.paymentState(entity.getPaymentState());
 		paymentDto.paymentDateTime(entity.getPaymentDateTime());
 		paymentDto.refundDateTime(entity.getRefundDateTime());
-		paymentDto.movieId(entityMovieId(entity));
-		paymentDto.movieName(entityMovieMovieKoreanTitle(entity));
-		paymentDto.posterThumbnail(entityMoviePosterThumbnail(entity));
-		paymentDto.memberId(entityMemberId(entity));
-		paymentDto.username(entityMemberUsername(entity));
+		paymentDto.movieId(entityMovieId(entity)); // entity에서 'movie의 기본 키'를 확보 후 할당
+		paymentDto.movieName(entityMovieMovieKoreanTitle(entity)); // entity에서 '영화의 한글 제목'을 확보 후 할당
+		paymentDto.posterThumbnail(entityMoviePosterThumbnail(entity)); // entity에서 '포스터 이미지 경로'를 확보 후 할당
+		paymentDto.memberId(entityMemberId(entity)); // entity에서 'member의 기본 키'를 확보 후 할당
+		paymentDto.username(entityMemberUsername(entity)); // entity에서 '로그인한 유저의 아이디'를 확보 후 할당
 		
 		return paymentDto.build();
 	}
@@ -134,6 +136,7 @@ public class PaymentMapper {
 		
 		List<PaymentDto.AudienceDto> list = new ArrayList<PaymentDto.AudienceDto>(audiences.size());
 		for (Payment.Audience audience : audiences) {
+			// Audience 객체의 값들을 이용하여 AudienceDto 객체를 만든 후 list에 추가
 			list.add(PaymentDto.AudienceDto.builder()
 					.category(audience.getCategory())
 					.count(audience.getCount())
@@ -150,6 +153,7 @@ public class PaymentMapper {
 		
 		List<PaymentDto.SelectionDto> list = new ArrayList<PaymentDto.SelectionDto>(selections.size());
 		for (Payment.Selection selection : selections) {
+			// Selection 객체의 값들을 이용하여 SelectionDto 객체를 만든 후 list에 추가
 			list.add(PaymentDto.SelectionDto.builder()
 					.seatName(selection.getSeatName())
 					.seatUniqueNumber(selection.getSeatUniqueNumber())

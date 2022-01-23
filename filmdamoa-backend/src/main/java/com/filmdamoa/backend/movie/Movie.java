@@ -39,10 +39,10 @@ public class Movie {
 	private String movieEnglishTitle;
 	
 	@Column(nullable = false)
-	private Boolean screeningState;
+	private Boolean screeningState; // 상영 여부
 	
 	@Column(unique = true, nullable = false)
-	private String posterThumbnail;
+	private String posterThumbnail; // 포스터 이미지 경로
 	
 	@Column(nullable = false)
 	private String synopsis;
@@ -67,16 +67,16 @@ public class Movie {
 	private OffsetDateTime createDateTime;
 	
 	@Column(unique = true)
-	private Short dailyBoxOffice;
+	private Short dailyBoxOffice; // 박스오피스 순위
 	
 	@Column(unique = true, nullable = false)
-	private String movieNumber;
+	private String movieNumber; // 영화 고유 번호
 	
 	@Formula("(select count(mm.movie_like) from movie_member mm where mm.movie_like = true and mm.movie_id = id)")
-	private Integer countOfMovieLikes;
+	private Integer countOfMovieLikes; // 좋아요 개수
 	
 	@Formula("(select avg(mm.audience_score) from movie_member mm where mm.movie_id = id)")
-	private Float avgOfAudienceScore;
+	private Float avgOfAudienceScore; // 평점의 평균
 	
 	@OneToMany(mappedBy = "movie")
 	private List<MoviePerson> moviePersons = new ArrayList<>();

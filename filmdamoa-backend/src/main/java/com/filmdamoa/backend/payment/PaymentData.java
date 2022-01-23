@@ -14,8 +14,8 @@ import java.util.Date;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class PaymentData {
-	private String impUid;
-	private String merchantUid;
+	private String impUid; // 아임포트 결제 번호
+	private String merchantUid; // 예매 번호
 	private String payMethod;
 	private String channel;
 	private String pgProvider;
@@ -36,7 +36,7 @@ public class PaymentData {
 	private long vbankDate;
 	private long vbankIssuedAt;
 	private String name;
-	private BigDecimal amount;
+	private BigDecimal amount; // 결제 금액
 	private BigDecimal cancelAmount;
 	private String currency;
 	private String buyerName;
@@ -45,9 +45,9 @@ public class PaymentData {
 	private String buyerAddr;
 	private String buyerPostcode;
 	private String customData;
-	private String status;
+	private String status; // 결제 상황
 	private long startedAt;
-	private long paidAt;
+	private long paidAt; // 결제 완료 시점의 Unix time
 	private long failedAt;
 	private long cancelledAt;
 	private String failReason;

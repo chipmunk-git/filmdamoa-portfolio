@@ -60,8 +60,8 @@ public class MovieMapper {
 		movieDto.audienceScore(entity.getAvgOfAudienceScore() == null ? 0 : entity.getAvgOfAudienceScore());
 		movieDto.movieLike(movieLike);
 		
-		movieDto.movieDirector(entityMoviePersonsToMovieDirector(entity));
-		movieDto.movieStar(entityMoviePersonsToMovieStar(entity));
+		movieDto.movieDirector(entityMoviePersonsToMovieDirector(entity)); // MoviePerson List에서 감독의 이름을 찾아낸 후 할당
+		movieDto.movieStar(entityMoviePersonsToMovieStar(entity)); // MoviePerson List에서 배우들의 이름을 찾아낸 후 할당
 		if (mappingCondition == MappingCondition.ALL) {
 			movieDto.movieGenre(entityMovieGenresToMovieGenre(entity));
 		}
@@ -84,6 +84,9 @@ public class MovieMapper {
 	
 	private String entityMoviePersonsToMovieDirector(Movie movie) {
 		List<MoviePerson> moviePersons = getMoviePersons(movie);
+		if (moviePersons == null) {
+			return null;
+		}
 		
 		String movieDirector = null;
 		for (MoviePerson moviePerson : moviePersons) {
@@ -92,6 +95,7 @@ public class MovieMapper {
 				return null;
 			}
 			
+			// 직책이 '감독'인 사람의 이름을 할당한 후 반복문 탈출
 			if (position.getDuty().equals("감독")) {
 				Person person = moviePerson.getPerson();
 				if (person == null) {
@@ -108,6 +112,9 @@ public class MovieMapper {
 	
 	private String entityMoviePersonsToMovieStar(Movie movie) {
 		List<MoviePerson> moviePersons = getMoviePersons(movie);
+		if (moviePersons == null) {
+			return null;
+		}
 		
 		List<String> list = new ArrayList<String>(moviePersons.size() - 1);
 		for (MoviePerson moviePerson : moviePersons) {
@@ -116,6 +123,7 @@ public class MovieMapper {
 				return null;
 			}
 			
+			// 직책이 '배우'인 사람들의 이름을 list에 추가
 			if (position.getDuty().equals("배우")) {
 				Person person = moviePerson.getPerson();
 				if (person == null) {
@@ -125,7 +133,7 @@ public class MovieMapper {
 				list.add(person.getKoreanName());
 			}
 		}
-		String movieStar = String.join(", ", list);
+		String movieStar = String.join(", ", list); // list의 항목들을 ', '로 연결
 		
 		return movieStar;
 	}
@@ -135,12 +143,7 @@ public class MovieMapper {
 			return null;
 		}
 		
-		List<MoviePerson> moviePersons = movie.getMoviePersons();
-		if (moviePersons == null) {
-			return null;
-		}
-		
-		return moviePersons;
+		return movie.getMoviePersons();
 	}
 	
 	private String entityMovieGenresToMovieGenre(Movie movie) {
@@ -160,9 +163,9 @@ public class MovieMapper {
 				return null;
 			}
 			
-			list.add(genre.getType());
+			list.add(genre.getType()); // 장르의 유형들을 list에 추가
 		}
-		String movieGenre = String.join(", ", list);
+		String movieGenre = String.join(", ", list); // list의 항목들을 ', '로 연결
 		
 		return movieGenre;
 	}

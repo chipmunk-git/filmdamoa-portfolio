@@ -21,11 +21,13 @@ public class MovieController {
 	@Autowired
 	private MovieService movieService;
 	
+	// 페이징 조건을 포함시켜 영화 목록 조회
 	@GetMapping
 	public ResponseEntity<Page<MovieDto>> readMovieAll(Pageable pageable) {
 		return ResponseEntity.ok().body(movieService.readMovieAll(pageable));
 	}
 	
+	// 영화 좋아요 토글
 	@PostMapping("/{id}/like")
 	public ResponseEntity<String> updateMovieLike(@PathVariable Long id, @RequestBody Map<String, Boolean> requestMap) {
 		movieService.updateMovieLike(id, requestMap);
