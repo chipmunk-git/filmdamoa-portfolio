@@ -26,7 +26,7 @@ public class Person {
 	private Long id;
 	
 	@Column(nullable = false)
-	private String koreanName;
+	private String koreanName; // 영화인의 한글 이름
 	
 	private String englishName;
 	
