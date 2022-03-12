@@ -39,9 +39,10 @@ const colorStyles = css`
   ${({ theme, styleProps, inAction }) => {
     const color = styleProps.color ||
       styleProps.transparent ? [theme.colors['black'], 0.85, 0.8] : [theme.colors['freshRed'], 0.15, 0.1];
-    
+
     const selected = color[0];
 
+    // background-color에 대해 기본적인 스타일이 적용되며, styleProps의 프로퍼티 및 inAction 값에 따라 스타일이 변경됨
     return css`
       background-color: ${selected};
 
@@ -53,12 +54,12 @@ const colorStyles = css`
         background-color: ${lighten(color[2], selected)};
       }
 
-      ${styleProps.transparent &&
+      ${styleProps.transparent && // transparent가 true인 경우
         css`
           color: ${selected};
           background-color: transparent;
 
-          ${styleProps.outline &&
+          ${styleProps.outline && // transparent와 더불어 outline도 true인 경우
             css`
               border: 1px solid ${selected};
             `
@@ -66,7 +67,7 @@ const colorStyles = css`
         `
       }
 
-      ${styleProps.outline && !styleProps.transparent &&
+      ${styleProps.outline && !styleProps.transparent && // outline은 true, transparent는 false인 경우
         css`
           color: ${selected};
           background-color: transparent;
@@ -117,6 +118,7 @@ const StyledButton = styled.button`
   ${colorStyles}
 `
 
+// 다양한 스타일이 적용될 수 있는 버튼 컴포넌트
 const UtilityButton = ({ children, styleProps, ...rest }) => {
   return (
     <StyledButton styleProps={styleProps} {...rest}>

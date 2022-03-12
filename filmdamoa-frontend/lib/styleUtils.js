@@ -13,6 +13,7 @@ export const shadow = weight => {
   return shadows[weight];
 }
 
+// 좌우로 흔들리는 애니메이션 묘사
 export const transitions = {
   shake: keyframes`
     0% {

@@ -3,20 +3,18 @@
 const storage = {
   set: (key, object) => {
     if (!sessionStorage) return null;
-    sessionStorage[key] = (typeof object) === 'string' ? object : JSON.stringify(object);
+    sessionStorage[key] = (typeof object) === 'string' ? object : JSON.stringify(object); // object의 자료형이 'string'이 아니라면 JSON.stringify() 메소드로 처리하여 저장
   },
-  get: (key) => {
-    if (!sessionStorage) return null;
-    if (!sessionStorage[key]) return null;
+  get: key => {
+    if (!sessionStorage || !sessionStorage[key]) return null;
 
     try {
-      const parsed = JSON.parse(sessionStorage[key]);
-      return parsed;
+      return JSON.parse(sessionStorage[key]);
     } catch (e) {
-      return sessionStorage[key];
+      return sessionStorage[key]; // key에 해당되는 값을 JSON.parse() 메소드로 처리할 수 없다면 있는 그대로 반환
     }
   },
-  remove: (key) => {
+  remove: key => {
     if (!sessionStorage) return null;
     if (sessionStorage[key]) sessionStorage.removeItem(key);
   }

@@ -187,8 +187,10 @@ const Copyright = styled.div`
   color: ${({ theme }) => theme.colors.black};
 `
 
-const withLayout = (WrappedComponent) => {
+// 통상적인 화면의 레이아웃 디자인에 이용되는 HOC
+const withLayout = WrappedComponent => {
   const WithLayout = props => {
+    // 리덕스에서 아이디 확보. 로그인을 하지 않았다면 null이 할당됨
     const { username } = useSelector(state => ({
       username: state.user.username
     }));
@@ -197,16 +199,19 @@ const withLayout = (WrappedComponent) => {
 
     const dispatch = useDispatch();
 
+    // 로그인과 관련된 값들을 제거한 후 페이지 새로고침
     const handleLogout = async () => {
       await dispatch(logout());
       storage.remove('destination');
       router.reload();
     }
 
+    // 로그인 상태 유지와 관련된 로직 수행
     useEffect(() => {
       dispatch(maintainAuth());
     }, [dispatch]);
 
+    // header, nav, section 및 footer가 포함됨
     return (
       <>
         <StyledHeader>
@@ -256,14 +261,14 @@ const withLayout = (WrappedComponent) => {
               </Link>
             </li>
             <li>
-              <Link href="/event">
+              {/* <Link href="/event"> */}
                 <a>이벤트</a>
-              </Link>
+              {/* </Link> */}
             </li>
             <li>
-              <Link href="/community">
+              {/* <Link href="/community"> */}
                 <a>커뮤니티</a>
-              </Link>
+              {/* </Link> */}
             </li>
           </StyledUl>
         </StyledNav>
@@ -273,24 +278,24 @@ const withLayout = (WrappedComponent) => {
         <StyledFooter>
           <FooterUl>
             <li>
-              <Link href="/info">
+              {/* <Link href="/info"> */}
                 <a>소개</a>
-              </Link>
+              {/* </Link> */}
             </li>
             <li>
-              <Link href="/inquire">
+              {/* <Link href="/inquire"> */}
                 <a>문의하기</a>
-              </Link>
+              {/* </Link> */}
             </li>
             <li>
-              <Link href="/agreement">
+              {/* <Link href="/agreement"> */}
                 <a>이용약관</a>
-              </Link>
+              {/* </Link> */}
             </li>
             <li>
-              <Link href="/privacy">
+              {/* <Link href="/privacy"> */}
                 <a>개인정보 취급방침</a>
-              </Link>
+              {/* </Link> */}
             </li>
           </FooterUl>
           <Copyright>© FILMDAMOA</Copyright>

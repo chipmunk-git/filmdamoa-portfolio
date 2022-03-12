@@ -13,6 +13,7 @@ const Label = styled.div`
 
 const StyledInput = styled.input`
   width: 100%;
+  height: 2.5rem;
   border: 1px solid ${({ theme }) => theme.colors.greyLight};
   border-radius: 0;
   outline: none;
@@ -22,6 +23,7 @@ const StyledInput = styled.input`
   padding-right: 0.5rem;
 `
 
+// input 및 임의의 label을 포함하는 컴포넌트
 const InputWithLabel = ({ label, styleProps, ...rest }) => {
   return (
     <Wrapper styleProps={styleProps}>

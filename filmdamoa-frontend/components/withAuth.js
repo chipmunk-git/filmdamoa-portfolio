@@ -82,9 +82,10 @@ const Title = styled.h2`
   margin: 0 0 1rem;
 `
 
+// 로그인 및 회원가입 화면의 레이아웃 디자인에 이용되는 HOC
 const withAuth = (WrappedComponent, title) => {
   const WithAuth = props => {
-    const [result, setResult] = useState(null);
+    const [result, setResult] = useState(null); // 회원가입이 정상적으로 완료되면 username 프로퍼티를 가지는 객체가 할당됨
 
     return (
       <Background>

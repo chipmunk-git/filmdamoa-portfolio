@@ -1,5 +1,6 @@
 import styled, { css } from 'styled-components';
 import { transitions } from './styleUtils';
+/* 둘 이상의 파일에서 공통으로 이용되는 컴포넌트 및 스타일의 모음 */
 
 export const StyledArticle = styled.article`
   width: 100%;
@@ -18,6 +19,7 @@ export const AuthErrorWrapper = styled.div`
   animation-fill-mode: forwards;
 `
 
+// 스크롤바에 대해 브라우저별 스타일 적용
 export const scrollable = css`
   ${({ theme }) => {
     const trackBg = theme.colors.trackBg;
