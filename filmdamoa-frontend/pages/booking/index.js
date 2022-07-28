@@ -98,25 +98,25 @@ const DateButton = styled.button`
     return css`
       ${active ?
         css`
-          ${day === 'SAT' &&
+          ${day === 'SAT' && // 토요일
             css`
               color: #3b5fcb;
             `
           }
 
-          ${day === 'SUN_OR_HOL' &&
+          ${day === 'SUN_OR_HOL' && // 일요일 또는 공휴일
             css`
               color: #e81002;
             `
           }
 
-          ${selected &&
+          ${selected && // 선택한 날짜
             css`
               background-color: ${theme.colors.greyBg};
               border-bottom: 0.125rem solid #503396;
             `
           }
-        ` :
+        ` : // 선택 불가능한 날짜
         css`
           cursor: default;
           color: ${({ theme }) => theme.colors.greyLight};
@@ -178,7 +178,7 @@ const MovieItem = styled.li`
   font-size: ${({ theme }) => theme.fontSize.medium};
 
   ${({ theme, active, selected }) => css`
-    ${active ?
+    ${active ? // 선택 가능 여부
       css`
         &:hover {
           background-color: ${darken(0.05, 'white')};
@@ -189,7 +189,7 @@ const MovieItem = styled.li`
       `
     }
 
-    ${selected &&
+    ${selected && // 선택한 영화
       css`
         background-color: ${theme.colors.thumbBg};
 
@@ -216,14 +216,14 @@ const MovieItem = styled.li`
     ${buttonStyles};
 
     ${({ theme, active, selected }) => css`
-      ${!active &&
+      ${!active && // 선택 불가능한 영화
         css`
           color: ${theme.colors.thumbBg};
           cursor: default;
         `
       }
 
-      ${selected &&
+      ${selected && // 선택한 영화
         css`
           color: white;
         `
@@ -266,7 +266,7 @@ const TheaterTabButton = styled.button`
       border-right: 1px solid ${theme.colors.greyLight};
     }
 
-    ${selected &&
+    ${selected && // 선택한 탭
       css`
         border: 1px solid ${theme.colors.thumbBg};
         border-bottom: 1px solid transparent;
@@ -304,7 +304,7 @@ const TheaterDistrictButton = styled.button`
   ${buttonStyles};
 
   ${({ theme, selected }) => css`
-    ${selected &&
+    ${selected && // 선택한 '지역 또는 특별관 유형'
       css`
         background-color: ${theme.colors.greyLight};
       `
@@ -319,7 +319,7 @@ const TheaterButton = styled.button`
   ${buttonStyles};
 
   ${({ theme, active, selected }) => css`
-    ${active ?
+    ${active ? // 선택 가능 여부
       css`
         &:hover {
           background-color: ${darken(0.05, 'white')};
@@ -332,7 +332,7 @@ const TheaterButton = styled.button`
       `
     }
 
-    ${selected &&
+    ${selected && // 선택한 극장
       css`
         color: white;
         background-color: ${theme.colors.thumbBg};
@@ -385,15 +385,15 @@ const TimeIcon = styled.i`
         width: 14px;
         height: 14px;
 
-        ${time === 'ERYM' ?
+        ${time === 'ERYM' ? // 조조
           css`
             background-image: url('/icons/time-sun.png');
-          ` :
+          ` : // 브런치
           css`
             background-image: url('/icons/time-brunch.png');
           `
         }
-      ` :
+      ` : // 심야
       css`
         width: 12px;
         height: 12px;
@@ -501,27 +501,29 @@ const MovieInfo = styled.span`
   }
 `
 
+// 예매 화면의 렌더링에 이용되는 컴포넌트
 const Index = ({ data, queryMovieNumber }) => {
   const router = useRouter();
 
-  const [parsedDates, setParsedDates] = useState(createParsedDates(data.movieFormDeList));
-  const [movies, setMovies] = useState(data.movieList);
-  const [parsedTheaters, setParsedTheaters] = useState({
+  const [parsedDates, setParsedDates] = useState(createParsedDates(data.movieFormDeList)); // 상영 일정이 정해진 날짜들
+  const [movies, setMovies] = useState(data.movieList); // 현재 상영 중인 영화들
+  const [parsedTheaters, setParsedTheaters] = useState({ // 각 범주별 극장 목록
     areaTheater: createParsedTheaters(data.areaBrchList),
     specialTheater: createParsedTheaters(data.spclbBrchList)
   });
-  const [bookableMovies, setBookableMovies] = useState(data.movieFormList);
-  const [selection, setSelection] = useState({
-    formattedDate: parsedDates[0]['formattedDate'],
-    movieNumber: queryMovieNumber,
-    theaterTab: 'areaTheater',
-    theaterDistrict: { areaTheater: null, specialTheater: null },
-    branchNumber: ['', '', '']
+  const [bookableMovies, setBookableMovies] = useState(data.movieFormList); // 선택한 조건으로 예매 가능한 영화들
+  const [selection, setSelection] = useState({ // 선택한 조건
+    formattedDate: parsedDates[0]['formattedDate'], // 형식화된 날짜
+    movieNumber: queryMovieNumber, // 영화 고유 번호
+    theaterTab: 'areaTheater', // 극장 범주
+    theaterDistrict: { areaTheater: null, specialTheater: null }, // 지역 또는 특별관 유형의 인덱스
+    branchNumber: ['', '', ''] // [극장 번호, 특별관 선택 여부, 지역 또는 특별관 유형의 코드]
   });
 
-  const scrollRef = useRef();
+  const scrollRef = useRef(); // 가로 스크롤바가 포함된 컴포넌트에 사용됨
   useEffect(() => {
     const handleWheel = event => {
+      /* 스크롤 휠만 이용하여 가로 스크롤바 조작 가능 */
       if (scrollRef.current.contains(event.target)) {
         event.preventDefault();
         scrollRef.current.scrollLeft += event.deltaY;
@@ -534,6 +536,7 @@ const Index = ({ data, queryMovieNumber }) => {
     }
   }, []);
 
+  // 상영 영화 및 영화 스케줄 조회 후 여러 State 업데이트
   const postBookingData = reqObj => http.post('/booking', reqObj).then(resp => {
     setParsedDates(createParsedDates(resp.data.movieFormDeList));
     setMovies(resp.data.movieList);
@@ -544,6 +547,7 @@ const Index = ({ data, queryMovieNumber }) => {
     setBookableMovies(resp.data.movieFormList);
   }).catch(err => console.log(err));
 
+  // '형식화된 날짜' 선택 및 로직 수행
   const handleDateSelection = async (active, formattedDate) => {
     if (active) {
       setSelection({ ...selection, formattedDate: formattedDate });
@@ -557,6 +561,7 @@ const Index = ({ data, queryMovieNumber }) => {
     }
   }
 
+  // '상영 일정이 정해진 날짜들' 렌더링
   const calendarItems = parsedDates.map(parsedDate =>
     <li key={parsedDate.id}>
       {parsedDate.fullYearAndMonth && <div>{parsedDate.fullYearAndMonth}</div>}
@@ -569,6 +574,7 @@ const Index = ({ data, queryMovieNumber }) => {
     </li>
   );
 
+  // '영화 고유 번호' 선택 및 로직 수행
   const handleMovieSelection = async (active, movieNumber) => {
     if (active) {
       setSelection({ ...selection, movieNumber: movieNumber });
@@ -582,6 +588,7 @@ const Index = ({ data, queryMovieNumber }) => {
     }
   }
 
+  // '현재 상영 중인 영화들' 렌더링
   const movieItems = movies.map(movie =>
     <MovieItem key={movie.movieNo} active={movie.formAt === 'Y'}
       movieRating={movieRating[movie.admisClassCd]} selected={selection.movieNumber === movie.movieNo}>
@@ -592,13 +599,16 @@ const Index = ({ data, queryMovieNumber }) => {
     </MovieItem>
   );
 
+  /* '극장 범주' 선택 */
   const handleTheaterTabToArea = () => setSelection({ ...selection, theaterTab: 'areaTheater' });
   const handleTheaterTabToSpecial = () => setSelection({ ...selection, theaterTab: 'specialTheater' });
+  // '지역 또는 특별관 유형의 인덱스' 선택
   const handleTheaterDistrict = (theaterTab, index) => setSelection({
     ...selection,
     theaterDistrict: { ...selection.theaterDistrict, [theaterTab]: index }
   });
 
+  // '[극장 번호, 특별관 선택 여부, 지역 또는 특별관 유형의 코드]' 선택 및 로직 수행
   const handleTheaterSelection = async (active, branchNumber) => {
     if (active) {
       setSelection({ ...selection, branchNumber: branchNumber });
@@ -612,6 +622,7 @@ const Index = ({ data, queryMovieNumber }) => {
     }
   }
 
+  // '지역 또는 특별관 유형 목록' 렌더링
   const theaterDistrictItems = parsedTheaters[selection.theaterTab].map((parsedTheater, index) =>
     <li key={parsedTheater[0]['areaCd']}>
       <TheaterDistrictButton selected={selection['theaterDistrict'][selection.theaterTab] === index}
@@ -621,6 +632,7 @@ const Index = ({ data, queryMovieNumber }) => {
     </li>
   );
 
+  // '지역 또는 특별관 유형의 극장 목록' 렌더링
   const theaterItems = (parsedTheaters[selection.theaterTab][selection['theaterDistrict'][selection.theaterTab]] || []).map(parsedTheater =>
     <li key={parsedTheater['brchNo']}>
       <TheaterButton active={parsedTheater['brchFormAt'] === 'Y'}
@@ -632,17 +644,19 @@ const Index = ({ data, queryMovieNumber }) => {
     </li>
   );
 
+  // 선택한 스케줄에 대한 상영 정보 확인 및 로직 수행
   const handleTimeSelection = bookableMovie => {
     if (confirm(`영화: ${bookableMovie.rpstMovieNm} / ${decode(bookableMovie.playKindNm)}\n` +
                 `상영 시간: ${bookableMovie.playStartTime} ~ ${bookableMovie.playEndTime}\n` +
                 `극장: ${decode(bookableMovie.brchNm)} / ${decode(bookableMovie.theabExpoNm)}\n` +
                 `좌석 현황: ${bookableMovie.restSeatCnt} / ${bookableMovie.totSeatCnt}\n` +
                 `\n예매 하시겠습니까?`)) {
-      storage.set('seatParameter', { branchNumber: selection['branchNumber'][0], scheduleNumber: bookableMovie.playSchdlNo });
+      storage.set('seatParameter', { branchNumber: selection['branchNumber'][0], scheduleNumber: bookableMovie.playSchdlNo }); // 극장 번호 및 영화 스케줄 번호 저장
       router.push('/booking/seat');
     }
   }
 
+  // '선택한 조건으로 예매 가능한 영화들' 렌더링
   const bookableMovieItems = (bookableMovies || []).map(bookableMovie =>
     <li key={bookableMovie.playSchdlNo}>
       <TimeButton onClick={() => handleTimeSelection(bookableMovie)}>
@@ -714,7 +728,7 @@ const Index = ({ data, queryMovieNumber }) => {
 }
 
 export const getServerSideProps = wrapper.getServerSideProps(async ({ req, res, query, store }) => {
-  const movieNumber = query.movieNumber;
+  const movieNumber = query.movieNumber; // 쿼리 스트링에서 movieNumber 필드 값 확보. movieNumber 필드 값이 없다면 undefined가 할당됨
   let reqObj = null;
   const date = new Date();
   const formattedDate = `${date.getFullYear()}${numberReader(date.getMonth() + 1)}${numberReader(date.getDate())}`;
@@ -732,6 +746,7 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ req, res, 
     };
   }
 
+  /* 상영 영화 및 영화 스케줄 조회 */
   if (accessToken) {
     store.dispatch(setAccessToken(accessToken));
     resp = await postDataInNodeJs('/booking', reqObj, accessToken, req, res, store);

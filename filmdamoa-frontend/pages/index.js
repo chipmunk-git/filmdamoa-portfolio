@@ -251,35 +251,39 @@ const BoxOfficeFaker = styled.div`
   }
 `
 
+// 메인 화면의 렌더링에 이용되는 컴포넌트
 const Index = ({ data }) => {
   const { username } = useSelector(state => ({
     username: state.user.username
   }));
 
-  const [movies, setMovies] = useState(data.content);
+  const [movies, setMovies] = useState(data.content); // 최신 영화 4편
+  // 좋아요 버튼의 기능을 구현한 함수
   const handleToggle = async id => {
-    if (!username) return;
+    if (!username) return; // 로그인을 하지 않았다면 함수 실행 중단
 
+    // 클릭된 영화의 '좋아요'에 대한 토글 결과값을 DB에 적용
     await http.post(`/movie/${id}/like`, {
       movieLike: movies.find(movie => movie.id === id).movieLike
     })
     .then(() => setMovies(
       movies.map(movie =>
+        // 클릭된 영화를 식별하는 조건문
         movie.id === id ? {
           ...movie,
-          movieLikes: movie.movieLike ? movie.movieLikes - 1 : movie.movieLikes + 1,
-          movieLike: !movie.movieLike
+          movieLikes: movie.movieLike ? movie.movieLikes - 1 : movie.movieLikes + 1, // '좋아요 여부'에 따라 '좋아요 개수' 증가 또는 감소
+          movieLike: !movie.movieLike // '좋아요 여부' 토글
         } : movie
       )
     ))
     .catch(err => console.log(err));
   }
 
+  // '최신 영화 4편' 렌더링
   const movieItems = movies.map(movie =>
     <li key={movie.id}>
       <Link href={`/movie/${movie.id}`}>
         <a title="영화상세 보기">
-          {/* <span>{movie.dailyBoxOffice}</span> */}
           <img src={movie.posterThumbnail} alt={movie.movieKoreanTitle} />
           <MovieInfoWrapper>
             <SynopsisBox>
@@ -317,7 +321,6 @@ const Index = ({ data }) => {
         <BoxOfficeWrapper>
           <BoxOfficeTitle>
             <MoreMovieFaker />
-            {/* <h1>박스오피스</h1> */}
             <MoreMovieWrapper>
               <Link href="/movie">
                 <a>더 많은 영화보기 <StyledPlus icon={["fas", "plus"]} /></a>
@@ -335,12 +338,14 @@ const Index = ({ data }) => {
 }
 
 export const getServerSideProps = wrapper.getServerSideProps(async ({ req, res, store }) => {
+  // 이미 로그인을 했다면 유저의 액세스 토큰 값이, 로그인을 하지 않았다면 undefined가 할당됨
   const accessToken = cookie.parse(req.headers.cookie || '').accessToken;
   let resp = null;
 
+  /* 최신 영화 4편을 가나다순으로 조회 */
   if (accessToken) {
-    store.dispatch(setAccessToken(accessToken));
-    resp = await getDataInNodeJs('/movie?page=0&size=4&sort=movieReleaseDate,desc&sort=movieKoreanTitle,asc', accessToken, req, res, store);
+    store.dispatch(setAccessToken(accessToken)); // 이미 로그인을 했다면 accessToken 업데이트
+    resp = await getDataInNodeJs('/movie?page=0&size=4&sort=movieReleaseDate,desc&sort=movieKoreanTitle,asc', accessToken, req, res, store); // accessToken을 포함시켜 요청
   } else {
     resp = await httpInNodeJs.get('/movie?page=0&size=4&sort=movieReleaseDate,desc&sort=movieKoreanTitle,asc');
   }

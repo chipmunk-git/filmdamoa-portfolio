@@ -185,6 +185,7 @@ const GuideWrapper = styled.div`
   }
 `
 
+// 예매 완료 화면의 렌더링에 이용되는 컴포넌트
 const Complete = ({ data }) => {
   const scrollRef = useRef();
   useEffect(() => {
@@ -278,12 +279,13 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ req, res, 
     };
   }
 
+  // 해당 아이디의 1시간 내 결제 정보 중, 가장 최근의 결제 정보 조회
   const resp = await getDataInNodeJs('/payment/none', accessToken, req, res, store);
 
   if (!resp) {
     return {
       redirect: {
-        destination: '/',
+        destination: '/', // 조회 결과가 없다면 메인 페이지로 리디렉션
         permanent: false,
       },
     };

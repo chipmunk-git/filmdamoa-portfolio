@@ -23,21 +23,23 @@ const StyledSpan = styled.span`
   }
 `
 
+// 로그인 화면의 렌더링에 이용되는 컴포넌트
 const Login = () => {
-  const [inputs, setInputs] = useState({
+  const [inputs, setInputs] = useState({ // 각 input의 입력값을 제어하는 데 이용됨
     username: '',
     password: ''
   });
   const { username, password } = inputs;
 
-  const [error, setError] = useState(null);
-  const [inAction, setInAction] = useState(false);
+  const [error, setError] = useState(null); // 각 오류 상황에 안내될 메시지
+  const [inAction, setInAction] = useState(false); // 요청 로딩 여부
 
   const router = useRouter();
 
   const dispatch = useDispatch();
 
   const onChange = useCallback(e => {
+    // 각 input의 name 및 value를 이용하여 inputs 업데이트
     const { name, value } = e.target;
     setInputs(inputs => ({
       ...inputs,
@@ -51,11 +53,13 @@ const Login = () => {
       await dispatch(login({ username, password }));
       const destination = storage.get('destination');
 
+      // 로그인이 정상적으로 완료되면 지정된 페이지 또는 메인 페이지로 이동
       if (destination) router.replace(destination);
       else router.replace('/');
     } catch (e) {
       setInAction(false);
 
+      // 응답 상태 코드에 따라 적절한 로직 수행
       if (e.response.status === 400) {
         const { errors } = e.response.data;
         const message = errors[0]['reason'];
@@ -67,12 +71,12 @@ const Login = () => {
         return setError(message);
       }
 
-      setError('알 수 없는 에러가 발생했습니다.')
+      setError('알 수 없는 에러가 발생했습니다.');
     }
   }
 
   const buttonStyleProps = useMemo(() => ({
-    size: 'great',
+    size: 'great', // font-size 및 padding 설정
     margin: '1rem 0',
     width: '100%'
   }), []);
@@ -108,7 +112,7 @@ export const getServerSideProps = async ({ req }) => {
   if (accessToken) {
     return {
       redirect: {
-        destination: '/',
+        destination: '/', // 이미 로그인을 했다면 메인 페이지로 리디렉션
         permanent: false,
       },
     };

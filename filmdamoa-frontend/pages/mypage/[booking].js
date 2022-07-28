@@ -172,6 +172,7 @@ const GuideWrapper = styled.div`
   }
 `
 
+// 예매 단건 조회 화면의 렌더링에 이용되는 컴포넌트
 const Booking = ({ data }) => {
   const scrollRef = useRef();
   useEffect(() => {
@@ -264,9 +265,9 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ req, res, 
   if (accessToken) store.dispatch(setAccessToken(accessToken));
   else return redirectObject;
 
-  const splits = query.booking.split('_mid_');
-  if (splits[0] !== 'booking') return redirectObject;
-  const resp = await getDataInNodeJs(`/payment/mid_${splits[1]}`, accessToken, req, res, store);
+  const splits = query.booking.split('_mid_'); // 경로에서 [booking]에 해당되는 값 확보 후 split 메소드 실행
+  if (splits[0] !== 'booking') return redirectObject; // [booking]에 해당되는 값이 올바르지 않으면 메인 페이지로 리디렉션
+  const resp = await getDataInNodeJs(`/payment/mid_${splits[1]}`, accessToken, req, res, store); // 예매 번호를 기준으로 결제 정보 조회
 
   if (!resp) return redirectObject;
   const data = resp.data;

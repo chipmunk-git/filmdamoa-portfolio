@@ -254,31 +254,33 @@ const MovieListPaginator = styled.div`
   }
 `
 
+// 영화 목록 화면의 렌더링에 이용되는 컴포넌트
 const Movie = ({ data }) => {
   const { username } = useSelector(state => ({
     username: state.user.username
   }));
 
-  const [movies, setMovies] = useState(data.content);
-  const [height, setHeight] = useState(58);
+  const [movies, setMovies] = useState(data.content); // 현재 페이지의 영화 목록
+  const [height, setHeight] = useState(58); // MovieListFaker 컴포넌트의 높이
   const [activePage, setActivePage] = useState(1);
 
   const initialRender = useRef(true);
   useEffect(async () => {
     if (initialRender.current) {
       initialRender.current = false;
-    } else {
+    } else { // 현재 페이지의 영화 목록(최신순 및 가나다순으로 정렬) 조회 후 State 업데이트
       await http.get(`/movie?page=${activePage - 1}&size=12&sort=movieReleaseDate,desc&sort=movieKoreanTitle,asc`).then(resp => {
         setMovies(resp.data.content);
       }).catch(err => alert(err.response.data.message));
     }
   }, [activePage]);
 
-  const wrapperRef = useRef();
-  const handleHeight = () => {
+  const wrapperRef = useRef(); // 높이를 알아내기 위해 MovieListWrapper 컴포넌트에 사용됨
+  const handleHeight = () => { // MovieListWrapper 컴포넌트의 높이와 같아지도록 height 업데이트
     if (height !== wrapperRef.current.getBoundingClientRect().height) setHeight(wrapperRef.current.getBoundingClientRect().height);
   }
 
+  // 화면의 크기가 변경될 때 handleHeight 실행
   useEffect(() => {
     const handleResize = debounce(handleHeight, 100);
     window.addEventListener('resize', handleResize);
@@ -288,9 +290,10 @@ const Movie = ({ data }) => {
     }
   }, [height]);
 
+  // 영화 목록이 변경될 때 handleHeight 실행
   useEffect(() => {
     setTimeout(handleHeight, 100);
-  }, [movies]);
+  }, [movies, height]);
 
   const handleToggle = async id => {
     if (!username) return;
@@ -312,6 +315,7 @@ const Movie = ({ data }) => {
 
   const handlePageChange = pageNumber => setActivePage(pageNumber);
 
+  // '현재 페이지의 영화 목록' 렌더링
   const movieItems = movies.map(movie =>
     <li key={movie.id}>
       <Link href={`/movie/${movie.id}`}>
@@ -367,6 +371,7 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ req, res, 
   const accessToken = cookie.parse(req.headers.cookie || '').accessToken;
   let resp = null;
 
+  /* 첫 페이지의 영화 목록(최신순 및 가나다순으로 정렬) 조회 */
   if (accessToken) {
     store.dispatch(setAccessToken(accessToken));
     resp = await getDataInNodeJs('/movie?page=0&size=12&sort=movieReleaseDate,desc&sort=movieKoreanTitle,asc', accessToken, req, res, store);

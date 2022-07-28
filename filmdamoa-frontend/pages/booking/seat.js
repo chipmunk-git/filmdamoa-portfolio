@@ -167,6 +167,7 @@ const disabled = css`
   background-repeat: no-repeat;
 `
 
+// 일반 좌석에 대해 기본적인 스타일이 적용되며, props의 프로퍼티에 따라 스타일이 변경됨
 const SeatButton = styled.button`
   width: ${buttonWidth}rem;
   height: ${buttonHeight}rem;
@@ -179,7 +180,7 @@ const SeatButton = styled.button`
   left: ${({ colNo }) => buttonWidth * colNo}rem;
 
   ${({ seatKind, selected, spare }) => css`
-    ${seatKind[1] !== 'SCT04' && seatKind[1] !== 'STOP_SELL' && spare &&
+    ${seatKind[1] !== 'SCT04' && seatKind[1] !== 'STOP_SELL' && spare && // 예매 가능한 좌석에 마우스 커서를 올린 경우
       css`
         &:hover {
           background-image: url('/icons/bg-seat-condition-choice.png');
@@ -188,21 +189,21 @@ const SeatButton = styled.button`
       `
     }
 
-    ${seatKind[0] === 'DISABLED_CLS' &&
+    ${seatKind[0] === 'DISABLED_CLS' && // 장애인석
       css`
         background-image: url('/icons/bg-seat-condition-disabled.png');
         ${disabled};
       `
     }
 
-    ${selected &&
+    ${selected && // 선택한 좌석
       css`
         background-image: url('/icons/bg-seat-condition-choice.png');
         ${choice};
       `
     }
 
-    ${seatKind[1] === 'SCT04' &&
+    ${seatKind[1] === 'SCT04' && // 예매 완료된 좌석
       css`
         background-image: url('/icons/bg-seat-condition-finish.png');
         font-size: 0 !important;
@@ -210,7 +211,7 @@ const SeatButton = styled.button`
       `
     }
 
-    ${seatKind[1] === 'STOP_SELL' &&
+    ${seatKind[1] === 'STOP_SELL' && // 띄어앉기석
       css`
         border: 1px solid #a59698;
         background-color: #a59698;
@@ -338,7 +339,7 @@ const SelectionItem = styled.li`
   }
 
   ${({ selected, totalCount }) => css`
-    ${selected &&
+    ${selected && // 선택한 좌석. totalCount 번째 요소까지 스타일이 변경됨
       css`
         background-color: #503396;
 
@@ -427,7 +428,7 @@ const ButtonWrapper = styled.div`
       color: #aaa;
 
       ${({ active }) => css`
-        ${active &&
+        ${active && // 활성화된 상태
           css`
             cursor: pointer;
             background-color: #329eb1;
@@ -439,6 +440,7 @@ const ButtonWrapper = styled.div`
   }
 `
 
+// 좌석 선택 화면의 렌더링에 이용되는 컴포넌트
 const Seat = () => {
   const { username } = useSelector(state => ({
     username: state.user.username
@@ -446,16 +448,17 @@ const Seat = () => {
 
   const router = useRouter();
 
-  const [audiences, setAudiences] = useState([
+  const [audiences, setAudiences] = useState([ // { 관객 유형, 수효, 요금 정보 } 목록
     { category: '성인', count: 0, fee: 13000 },
     { category: '청소년', count: 0, fee: 10000 },
     { category: '우대', count: 0, fee: 5000 }
   ]);
-  const [parsedRows, setParsedRows] = useState([]);
-  const [parsedSeats, setParsedSeats] = useState([]);
-  const [movieDetailInfo, setMovieDetailInfo] = useState({});
-  const [selections, setSelections] = useState(Array.from({ length: 8 }, () => null));
+  const [parsedRows, setParsedRows] = useState([]); // 행 이름 목록
+  const [parsedSeats, setParsedSeats] = useState([]); // 해당 상영관 좌석의 세부 정보 목록
+  const [movieDetailInfo, setMovieDetailInfo] = useState({}); // 해당 영화 스케줄의 세부 정보
+  const [selections, setSelections] = useState(Array.from({ length: 8 }, () => null)); // { 좌석 이름, 좌석 고유 번호 } 목록
 
+  // 좌석 및 상영 정보 조회 후 여러 State 업데이트
   const postSeatData = async reqObj => {
     await http.post('/booking/seat', reqObj).then(resp => {
       const { parsedRowList, parsedSeatList } = parseSeatDatas(resp.data);
@@ -491,6 +494,7 @@ const Seat = () => {
     }
   }, []);
 
+  // 모든 State 초기화
   const handleInitialization = () => {
     setAudiences(audiences => audiences.map(audience => ({ ...audience, count: 0 })));
 
@@ -502,21 +506,22 @@ const Seat = () => {
   }
 
   const handleDecrease = category => {
-    if (selectedCount < totalCount) {
+    if (selectedCount < totalCount) { // '좌석을 선택한 관객 수' < '영화를 예매할 관객 수'
       setAudiences(audiences => audiences.map(audience => audience.count > 0 &&
-        audience.category === category ? { ...audience, count: audience.count - 1 } : audience
+        audience.category === category ? { ...audience, count: audience.count - 1 } : audience // 수효가 0보다 클 때만, 해당 관객 유형의 수효 감소
       ));
     }
   }
 
   const handleIncrease = category => {
-    if (totalCount < 8) {
+    if (totalCount < 8) { // 최대 여덟 명까지 예매 가능
       setAudiences(audiences => audiences.map(audience =>
-        audience.category === category ? { ...audience, count: audience.count + 1 } : audience
+        audience.category === category ? { ...audience, count: audience.count + 1 } : audience // 해당 관객 유형의 수효 증가
       ));
     }
   }
 
+  // '{ 관객 유형, 수효, 요금 정보 } 목록' 렌더링
   const counterItems = audiences.map(audience =>
     <li key={audience.category}>
       {audience.category}
@@ -526,10 +531,12 @@ const Seat = () => {
     </li>
   );
 
+  // '행 이름 목록' 렌더링
   const parsedRowItems = parsedRows.map((parsedRow, index) =>
     <li key={index}>{parsedRow && <span>{parsedRow}</span>}</li>
   );
 
+  // 출입구 유형 코드에 상응되는 아이콘의 경로 및 대체 텍스트
   const exitIcon = {
     GTU: ['/icons/img-door-top.png', '상단측 출입구'],
     GTR: ['/icons/img-door-right.png', '우측 출입구'],
@@ -544,6 +551,7 @@ const Seat = () => {
     const reA = /[^a-zA-Z]/g;
     const reN = /[^0-9]/g;
 
+    // '{ 좌석 이름, 좌석 고유 번호 } 목록'에서, 좌석 이름(`${알파벳}${숫자}` 형태)을 오름차순으로 정렬하고 null은 마지막에 위치시키는 함수
     const sortAlphaNum = (a, b) => {
       if (a === b) return 0;
       else if (a === null) return 1;
@@ -563,11 +571,11 @@ const Seat = () => {
       }
     }
 
-    if (seatKind !== 'SCT04' && seatKind !== 'STOP_SELL') {
-      if (selections.some(selection => (selection && selection.seatName) === seatName)) {
-        setSelections(selections => selections.map(selection => (selection && selection.seatName) === seatName ? null : selection).sort(sortAlphaNum));
-      } else if (selectedCount < totalCount) {
-        setSelections(selections => selections.slice(0, 7).concat({ seatName, seatUniqueNumber }).sort(sortAlphaNum));
+    if (seatKind !== 'SCT04' && seatKind !== 'STOP_SELL') { // '예매 완료된 좌석' 또는 '띄어앉기석'이 아닌 경우
+      if (selections.some(selection => (selection && selection.seatName) === seatName)) { // 이미 '선택한 좌석'인 경우
+        setSelections(selections => selections.map(selection => (selection && selection.seatName) === seatName ? null : selection).sort(sortAlphaNum)); // 좌석 이름이 일치하는 항목 제거
+      } else if (selectedCount < totalCount) { // 이미 '선택한 좌석'이 아니면서 '좌석을 선택한 관객 수' < '영화를 예매할 관객 수'인 경우
+        setSelections(selections => selections.slice(0, 7).concat({ seatName, seatUniqueNumber }).sort(sortAlphaNum)); // 새로운 항목 추가
       }
     }
   }
@@ -575,6 +583,7 @@ const Seat = () => {
   const selectedCount = selections.filter(Boolean).length;
   const totalCount = audiences.reduce((prevTotal, audience) => prevTotal + audience.count, 0);
 
+  // '해당 상영관 좌석의 세부 정보 목록' 렌더링
   const parsedSeatItems = parsedSeats.map((parsedSeatRow, index) =>
     <li key={index}>
       {parsedSeatRow.map(parsedSeatCol =>
@@ -590,10 +599,12 @@ const Seat = () => {
     </li>
   );
 
+  // '{ 좌석 이름, 좌석 고유 번호 } 목록' 렌더링
   const selectionItems = selections.map((selection, index) =>
     <SelectionItem key={index} totalCount={totalCount} selected={selection && selection.seatName}>{selection === null ? '-' : selection.seatName}</SelectionItem>
   );
 
+  // 수효가 0보다 큰 항목만 렌더링
   const audienceItems = audiences.map(audience => audience.count > 0 &&
     <li key={audience.category}>
       {audience.category}
@@ -607,11 +618,12 @@ const Seat = () => {
 
   const handleNextMotion = active => {
     if (active) {
-      storage.set('billParameter', { audiences, selections: selections.filter(Boolean) });
+      storage.set('billParameter', { audiences, selections: selections.filter(Boolean) }); // '{ 관객 유형, 수효, 요금 정보 } 목록' 및 '{ 좌석 이름, 좌석 고유 번호 } 목록' 저장
 
       if (username) {
         router.push('/booking/bill');
       } else {
+        /* 도착 경로 저장 후, 로그인 페이지로 이동 */
         storage.set('destination', '/booking/bill');
         router.push('/login');
       }

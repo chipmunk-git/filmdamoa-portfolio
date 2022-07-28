@@ -233,6 +233,7 @@ const ButtonWrapper = styled.div`
   }
 `
 
+// 계산서 화면의 렌더링에 이용되는 컴포넌트
 const Bill = () => {
   const { username } = useSelector(state => ({
     username: state.user.username
@@ -240,22 +241,23 @@ const Bill = () => {
 
   const router = useRouter();
 
-  const [checkedState, setCheckedState] = useState('신용/체크카드');
+  const [checkedState, setCheckedState] = useState('신용/체크카드'); // 결제 수단. '신용/체크카드', '휴대폰 결제' 및 '카카오페이' 중 하나를 선택
   const [audiences, setAudiences] = useState([]);
   const [movieDetailInfo, setMovieDetailInfo] = useState({});
 
+  // 좌석 및 상영 정보 조회 후 movieDetailInfo 업데이트
   const postBillData = async reqObj => {
     await http.post('/booking/seat', reqObj).then(resp => {
       const movieDtlInfo = resp.data.movieDtlInfo;
       setMovieDetailInfo({
-        admisClassCd: movieDtlInfo.admisClassCd,
-        movieNm: movieDtlInfo.movieNm,
-        playKindName: decode(movieDtlInfo.playKindName),
-        brchNm: decode(movieDtlInfo.brchNm),
-        theabExpoNm: decode(movieDtlInfo.theabExpoNm),
-        playDeAndDow: `${movieDtlInfo.playDe.substr(0, 4)}.${movieDtlInfo.playDe.substr(4, 2)}.${movieDtlInfo.playDe.substr(6, 2)}(${movieDtlInfo.playDowNm})`,
+        admisClassCd: movieDtlInfo.admisClassCd, // 등급 코드
+        movieNm: movieDtlInfo.movieNm, // 영화 이름
+        playKindName: decode(movieDtlInfo.playKindName), // 상영 유형
+        brchNm: decode(movieDtlInfo.brchNm), // 극장 이름
+        theabExpoNm: decode(movieDtlInfo.theabExpoNm), // 상영관 이름
+        playDeAndDow: `${movieDtlInfo.playDe.substr(0, 4)}.${movieDtlInfo.playDe.substr(4, 2)}.${movieDtlInfo.playDe.substr(6, 2)}(${movieDtlInfo.playDowNm})`, // 상영일 및 요일
         playTime: `${movieDtlInfo.playStartTime.substr(0, 2)}:${movieDtlInfo.playStartTime.substr(2, 2)}` +
-                  `~${movieDtlInfo.playEndTime.substr(0, 2)}:${movieDtlInfo.playEndTime.substr(2, 2)}`
+                  `~${movieDtlInfo.playEndTime.substr(0, 2)}:${movieDtlInfo.playEndTime.substr(2, 2)}` // 상영 시작 및 종료 시간
       });
     }).catch(err => console.log(err));
   }
@@ -274,6 +276,7 @@ const Bill = () => {
     postBillData(reqObj);
   }, []);
 
+  // jQuery 및 아임포트 JavaScript SDK Library 로드
   useEffect(() => {
     const jquery = document.createElement('script');
     jquery.src = 'https://code.jquery.com/jquery-1.12.4.min.js';
@@ -289,6 +292,7 @@ const Bill = () => {
     }
   }, []);
 
+  // 라디오 버튼의 value로 checkedState 업데이트
   const handleChange = evt => setCheckedState(evt.target.value);
 
   const audienceItems = audiences.map(audience => audience.count > 0 &&
@@ -302,6 +306,7 @@ const Bill = () => {
 
   const handlePrevMotion = () => router.back();
 
+  // '결제' 버튼 클릭 시 PG사의 결제창이 호출됨
   const handleRequestPay = async () => {
     const seatParameter = storage.get('seatParameter');
     const billParameter = storage.get('billParameter');
@@ -313,7 +318,7 @@ const Bill = () => {
 
     const merchant_uid = `mid_${new Date().getTime()}`;
     const reqObj = {
-      merchantUid: merchant_uid,
+      merchantUid: merchant_uid, // 예매 번호
       scheduleNumber: seatParameter.scheduleNumber,
       branchNumber: seatParameter.branchNumber,
       playKindName: movieDetailInfo.playKindName,
@@ -323,12 +328,13 @@ const Bill = () => {
       playTime: movieDetailInfo.playTime,
       audiences: billParameter.audiences,
       selections: billParameter.selections,
-      amount: totalAmount,
+      amount: totalAmount, // 결제 금액
       paymentState: '결제 미완료',
       movieName: movieDetailInfo.movieNm,
       username: username
     };
 
+    // 미완성 초기 결제 정보를 검증 및 가공하여 DB에 저장
     const paymentResp = await http.post('/payment', reqObj).catch(err => {
       alert(`결제 실패: ${err.response.data.message}`);
       return undefined;
@@ -336,7 +342,7 @@ const Bill = () => {
     if (!paymentResp) return;
 
     const { IMP } = window;
-    IMP.init(process.env.NEXT_PUBLIC_MERCHANT);
+    IMP.init(process.env.NEXT_PUBLIC_MERCHANT); // 결제 요청 전, 가맹점 식별코드를 이용하여 IMP 객체 초기화
 
     const pgAndPayMethod = {
       '신용/체크카드': ['bluewalnut', 'card'],
@@ -345,23 +351,26 @@ const Bill = () => {
     };
     const [pg, payMethod] = pgAndPayMethod[checkedState];
 
+    // 결제 승인에 필요한 정보를 가지는 객체
     const data = {
-      pg: pg,
-      pay_method: payMethod,
+      pg: pg, // PG사 코드값
+      pay_method: payMethod, // 결제 방법
       merchant_uid: merchant_uid,
-      name: `${movieDetailInfo.movieNm}/${movieDetailInfo.playKindName}`,
+      name: `${movieDetailInfo.movieNm}/${movieDetailInfo.playKindName}`, // 주문명
       amount: totalAmount,
       buyer_name: username
     };
 
+    // 결제 후 호출되는 함수
     const callback = async rsp => {
-      if (rsp.success) {
+      if (rsp.success) { // 결제 성공 시 로직
+        // 결제 번호 및 예매 번호를 이용하여 결제 정보 검증 및 완성
         await http.post('/payment/complete', { impUid: rsp.imp_uid, merchantUid: rsp.merchant_uid }).then(resp => {
           switch (resp.data.status) {
-            case 'vbankIssued':
+            case 'vbankIssued': // 가상계좌 발급 성공
               setTimeout(() => alert(resp.data.message), 100);
               break;
-            case 'success':
+            case 'success': // 결제 성공
               setTimeout(() => alert(resp.data.message), 100);
 
               storage.remove('seatParameter');
@@ -372,12 +381,12 @@ const Bill = () => {
               break;
           }
         }).catch(err => setTimeout(() => alert(`결제 실패: ${err.response.data.message}`), 100));
-      } else {
+      } else { // 결제 실패 시 로직
         setTimeout(() => alert(`결제 실패: ${rsp.error_msg}`), 100);
       }
     }
 
-    IMP.request_pay(data, callback);
+    IMP.request_pay(data, callback); // 결제창 호출
   }
 
   return (
@@ -468,7 +477,7 @@ export const getServerSideProps = wrapper.getServerSideProps(({ req, store }) =>
   } else {
     return {
       redirect: {
-        destination: '/',
+        destination: '/', // 로그인을 하지 않았다면 메인 페이지로 리디렉션
         permanent: false,
       },
     };

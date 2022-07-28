@@ -224,23 +224,26 @@ const BookingListPaginator = styled.div`
   }
 `
 
+// 개인 계정 관리 화면의 렌더링에 이용되는 컴포넌트
 const Index = ({ data }) => {
-  const [bookings, setBookings] = useState(data.content);
-  const [activePage, setActivePage] = useState(1);
+  const [bookings, setBookings] = useState(data.content); // 현재 페이지의 예매 내역 목록
+  const [activePage, setActivePage] = useState(1); // 현재 페이지
 
   const initialRender = useRef(true);
   useEffect(async () => {
     if (initialRender.current) {
-      initialRender.current = false;
-    } else {
+      initialRender.current = false; // 첫 렌더링에서의 HTTP 요청을 막는 데 이용됨
+    } else { // 현재 페이지의 예매 내역 목록(최신순으로 정렬) 조회 후 State 업데이트
       await http.get(`/payment?page=${activePage - 1}&size=10&sort=paymentDateTime,desc`).then(resp => {
         setBookings(resp.data.content);
       }).catch(err => alert(err.response.data.message));
     }
   }, [activePage]);
 
+  // 페이지 변경 핸들러
   const handlePageChange = pageNumber => setActivePage(pageNumber);
 
+  // '현재 페이지의 예매 내역 목록' 렌더링
   const bookingItems = bookings.map(booking =>
     <li key={booking.impUid}>
       <a href={`/mypage/booking_${booking.merchantUid}`}>
@@ -312,6 +315,7 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ req, res, 
     };
   }
 
+  // 첫 페이지의 예매 내역 목록(최신순으로 정렬) 조회
   const resp = await getDataInNodeJs('/payment?page=0&size=10&sort=paymentDateTime,desc', accessToken, req, res, store);
 
   if (!resp) {

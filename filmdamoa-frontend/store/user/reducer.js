@@ -1,10 +1,12 @@
 import { userActionTypes } from './action';
 
+// 초기 State 정의
 const userInitialState = {
   username: null,
   accessToken: null,
 };
 
+// 리듀서 정의
 export default function reducer(state = userInitialState, action) {
   switch (action.type) {
     case userActionTypes.LOGIN_SUCCESS:

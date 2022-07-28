@@ -5,7 +5,8 @@ import '../lib/fontawesome';
 import { useRemoveFocusWhenNotTab } from '../lib/removeFocus';
 import { wrapper } from '../store/store';
 
-config.autoAddCss = false;
+config.autoAddCss = false; // Font Awesome 기본 CSS의 자동 추가를 방지
+// 전역 스타일 생성
 const GlobalStyle = createGlobalStyle`
   ${dom.css()};
 
@@ -34,6 +35,7 @@ const GlobalStyle = createGlobalStyle`
   }
 `
 
+// 일관적인 스타일 관리를 위한 theme 객체
 const theme = {
   colors: {
     black: '#140a00',
@@ -61,6 +63,7 @@ const theme = {
   },
 };
 
+// 폰트 적용을 위한 @font-face rule 작성
 const fontFace = `@font-face {
   font-family: 'Roboto';
   src: url('/fonts/Roboto-Regular.eot');
@@ -85,6 +88,7 @@ const fontFace = `@font-face {
   font-display: auto;
 }`;
 
+// 각 페이지의 초기화에 이용되는 컴포넌트
 function App({ Component, pageProps }) {
   useRemoveFocusWhenNotTab();
 
@@ -99,7 +103,7 @@ function App({ Component, pageProps }) {
         <Component {...pageProps} />
       </ThemeProvider>
     </>
-  )
+  );
 }
 
 export default wrapper.withRedux(App);

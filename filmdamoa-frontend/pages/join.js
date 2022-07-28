@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { matches, isEmail } from 'validator';
@@ -19,6 +19,7 @@ const ResultWrapper = styled.div`
   }
 `
 
+// 회원가입 화면의 렌더링에 이용되는 컴포넌트
 const Join = ({ result, setResult }) => {
   const [inputs, setInputs] = useState({
     username: '',
@@ -29,26 +30,33 @@ const Join = ({ result, setResult }) => {
   const { username, password, passwordConfirm, email } = inputs;
 
   const [error, setError] = useState(null);
-  const [seconds, setSeconds] = useState(5);
+  const [seconds, setSeconds] = useState(5); // 회원가입 완료 후 이용될 카운트
   const [inAction, setInAction] = useState(false);
 
   const router = useRouter();
 
-  // 코드 출처: https://stackoverflow.com/a/61572623 기반
-  useEffect(() => {
+  // 코드 출처: https://reactjs.org/docs/hooks-faq.html#what-can-i-do-if-my-effect-dependencies-change-too-often 기반
+  const isFinished = useRef(false);
+  useEffect(() => { // 회원가입이 정상적으로 완료되면 5초 카운트다운 후, 메인 페이지로 이동
     if (!result) return;
 
     const myInterval = setInterval(() => {
-      if (seconds === 0) {
+      setSeconds(s => {
+        if (s === 1) isFinished.current = true;
+        return s - 1;
+      });
+
+      if (isFinished.current) {
         clearInterval(myInterval);
         router.replace('/');
-      } else setSeconds(seconds - 1);
+      }
     }, 1000);
 
     return () => clearInterval(myInterval);
-  }, [seconds]);
+  }, [result]);
 
   // 코드 출처: https://backend-intro.vlpt.us/6/03.html 기반
+  // 각 input의 입력값을 검증하는 데 이용되는 객체
   const validate = {
     username: (value) => {
       if (!matches(value, '^([a-z0-9]){4,30}$')) {
@@ -62,7 +70,7 @@ const Join = ({ result, setResult }) => {
         setError('비밀번호는 8자 이상의 영문 소문자, 숫자, 특수문자로 이뤄져야 합니다.');
         return false;
       }
-      setError(null); // 이메일과 아이디는 에러 null 처리를 중복확인 부분에서 하게 됩니다
+      setError(null); // 이메일과 아이디는 에러의 null 처리를 중복 확인 부분에서 하게 됩니다.
       return true;
     },
     passwordConfirm: (value) => {
@@ -82,6 +90,7 @@ const Join = ({ result, setResult }) => {
     }
   }
 
+  // 아이디 또는 이메일의 중복 확인 후, 해당 입력값이 중복된다면 error 업데이트
   const checkExists = async (key, value, message) => {
     try {
       const resp = await http.get(`/auth/exists/${key}/${value}`);
@@ -96,6 +105,7 @@ const Join = ({ result, setResult }) => {
     }
   }
 
+  /* 해당 함수가 반복적으로 호출된다면, 가장 마지막 함수를 다음 300ms 이후에 실행 */
   const checkUsernameExists = debounce((username) => {
     checkExists('username', username, '이미 존재하는 아이디입니다.');
   }, 300);
@@ -111,12 +121,12 @@ const Join = ({ result, setResult }) => {
       [name]: value
     }));
 
-    // 검증작업 진행
+    // 검증 작업 진행
     const validation = validate[name](value);
-    if (name.indexOf('password') > -1 || !validation) return; // 비밀번호 검증이거나, 검증 실패하면 여기서 마침
+    if (name.indexOf('password') > -1 || !validation) return; // 비밀번호 검증이거나, 검증에 실패하면 여기서 마침
 
     // TODO: 이메일, 아이디 중복 확인
-    const check = name === 'email' ? checkEmailExists : checkUsernameExists; // name에 따라 이메일 체크할지 아이디 체크할지 결정
+    const check = name === 'email' ? checkEmailExists : checkUsernameExists; // name에 따라 이메일을 체크할지 아이디를 체크할지 결정
     check(value);
   }, [password]);
 
@@ -133,7 +143,7 @@ const Join = ({ result, setResult }) => {
 
     try {
       setInAction(true);
-      const resp = await http.post('/auth/join', { email, username, password });
+      const resp = await http.post('/auth/join', { email, username, password }); // 회원가입 요청
       setResult(result => ({
         ...result,
         username: resp.data.username
@@ -148,7 +158,7 @@ const Join = ({ result, setResult }) => {
         return setError(message);
       }
 
-      setError('알 수 없는 에러가 발생했습니다.')
+      setError('알 수 없는 에러가 발생했습니다.');
     }
   }
 
